@@ -12,8 +12,8 @@
     <artifactId>frontend</artifactId>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <jar.skipIfEmpty>true</jar.skipIfEmpty>
+        <maven.install.skip>true</maven.install.skip>
     </properties>
     <build>
         <plugins>
@@ -23,7 +23,7 @@
                 <executions>
                     <execution>
                         <id>default-jar</id>
-                        <phase/>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
