@@ -1,5 +1,5 @@
 import axios from 'axios'
-axios.defaults.baseURL = 'https://senior-project-nu.herokuapp.com';
+axios.defaults.baseURL = '/';
 import qs from 'qs'
 
 export function post(_this, url, payload, successCallback, errorCallback, headers = '') {

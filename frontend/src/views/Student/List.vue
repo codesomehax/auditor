@@ -349,7 +349,7 @@ export default {
             })
           }, error =>{
             this.$store.dispatch('setSnackbar', {
-              text: error,
+              text: error.response ? error.response.data.message : error,
               color: "error"
             })
           }, {

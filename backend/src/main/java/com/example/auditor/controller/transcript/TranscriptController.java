@@ -24,7 +24,12 @@ public class TranscriptController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StudentRecord createTranscript(@RequestParam("file") MultipartFile file) throws IOException {
-        return transcriptService.createTranscript(file);
+        try {
+            return transcriptService.createTranscript(file);
+        } catch (Exception x) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to parse the transcript");
+        }
     }
 
     @GetMapping("all")
