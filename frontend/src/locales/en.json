@@ -1,0 +1,38 @@
+{
+  "avatar": "Student Audit",
+  "buttons": "Buttons",
+  "calendar": "Calendar",
+  "charts": "Charts",
+  "components": "Components",
+  "dashboard": "Dashboard",
+  "etables": "Extended Tables",
+  "forms": "Forms",
+  "icons": "Icons",
+  "notifications": "Notifications",
+  "pages": "Pages",
+  "plan": "Choose Plan",
+  "register": "Register Page",
+  "search": "Search",
+  "tables": "Tables",
+  "tabs": "Tabs",
+  "widgets": "Widgets",
+  "wizard": "Wizard",
+  "add": "Add",
+  "edit": "Edit",
+  "create": "Create",
+  "major": "Major",
+  "year": "Year",
+  "yes": "Yes",
+  "no": "No",
+  "warning": "Warning",
+  "delete": {
+    "text": "Delete",
+    "warning": "Are you sure you want to delete",
+    "items": "item(s)"
+  },
+  "curriculum": {
+    "list": "Curriculum list",
+    "add": "Add curriculum",
+    "curriculum": "Curriculum"
+  }
+}

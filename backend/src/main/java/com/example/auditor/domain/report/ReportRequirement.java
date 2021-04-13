@@ -1,0 +1,41 @@
+package com.example.auditor.domain.report;
+
+import com.example.auditor.domain.curriculum.Requirement;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "report_requirement")
+@Entity
+@Builder
+public class ReportRequirement {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private String name;
+    private String patterns;
+    private Integer credit;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private ReportRequirementType type;
+
+
+    public static ReportRequirement fromCurriculumRequirement(Requirement requirement) {
+        return ReportRequirement.builder()
+                .id(requirement.getId())
+                .name(requirement.getName())
+                .patterns(requirement.getPatterns())
+                .credit(requirement.getCredit())
+                .type(ReportRequirementType.fromCurriculumRequirementType(requirement.getType()))
+                .build();
+    }
+
+}

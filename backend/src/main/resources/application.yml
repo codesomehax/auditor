@@ -1,0 +1,49 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
+
+server:
+  port: 8080
+  address: 0.0.0.0
+  error:
+    include-message: always
+
+smtp:
+  host: "smtp.gmail.com"
+  port: "587"
+  auth: "true"
+  tls:  "true"
+
+audit:
+  parser:
+    curriculum-ectc-notation: true
+    type-prefix: "Category:"
+    requirements-row-terminator: "Total"
+    transcript:
+      regex:
+        course-code: "^\\w+\\s*\\d{3}"
+#        gpa-regex: "(\\d\\.?\\d{1,2}|\\d|n\/a)\\s*$"
+#        credit-regex: "(\\d)"
+#        letter-grade: "(\\w{1,2}\\+?)"
+        credit-and-gpa: "(\\w{1,2}[+-]?)\\s+(\\d)\\s+(\\d\\.\\d{1,2}|\\d|n\\/a)\\s*$"
+        gpa: "GPA:"
+        cumulative: "Cumulative\\s*Cr:\\s*(\\d+)\\s*GPA:\\s*(\\d\\.\\d{1,2}|\\d)\\s*"
+        prefix:
+          student-name: "student\\s*name\\s*:"
+          student-id: "id#"
+          school-name: "school\\s*:"
+          student-major: "primary\\s*major\\s*:"
+          admission-semester: "admission\\s*semester\\s*:"
+          term: "^(fall|spring|summer)\\s*\\d{4}"
+          overall: "^Overall"
+        suffix:
+          id: "id#"
+          program: "program\\s*:"
+          end-line: "(\r\n|\r|\n)"
