@@ -19,3 +19,12 @@ After building the project, you can run the `auditor.jar` inside the `target` di
 or you can specify the server port (defaults to 8080)
 
 `java -jar -Dserver.port=7777 auditor.jar`
+
+
+<h3>Database</h3>
+
+By default, the app creates the file of H2 database (`db.mv.db` file in the `target` directory). So the data is persistent after the shutdowns. 
+
+If you want to use in-memory database, then specify the `DB_URL` flag which should be a valid h2 jdbc url.
+
+` java -jar auditor.jar --DB_MODE=jdbc:h2:mem:testdb`
