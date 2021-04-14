@@ -3,11 +3,14 @@ spring:
     console:
       enabled: true
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: ${DB_URL:jdbc:h2:file:./db}
   data:
     jpa:
       repositories:
         bootstrap-mode: default
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 server:
   port: 8080

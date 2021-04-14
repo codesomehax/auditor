@@ -121,7 +121,6 @@ public class TranscriptParser {
         intermediateTerm.getPosition().getFirst(),
         intermediateTerm.getPosition().getSecond()
     ).strip();
-    log.error(termName);
     termName = termName.replaceAll("[\\t\\n\\r]+"," "); // remove newlines
     LinkedList<TermCourse> termCourses = buildCourses(intermediateTerm.getCourseRegion());
     String textTermGpa = getTermGpa(intermediateTerm.getCourseRegion());
