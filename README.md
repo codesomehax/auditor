@@ -27,4 +27,4 @@ By default, the app creates the file of H2 database (`db.mv.db` file in the `tar
 
 If you want to use in-memory database, then specify the `DB_URL` flag which should be a valid h2 jdbc url.
 
-` java -jar auditor.jar --DB_MODE=jdbc:h2:mem:testdb`
+` java -jar auditor.jar --DB_URL=jdbc:h2:mem:testdb`
