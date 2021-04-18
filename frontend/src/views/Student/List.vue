@@ -177,7 +177,7 @@
           
         <v-icon
           aria-label="Close"
-          @click="send=false, names=''"
+          @click="send=false"
         >
           mdi-close
         </v-icon>
@@ -217,7 +217,7 @@
           <v-btn
             color="primary"
             text
-            @click="send = false, names = ''"
+            @click="send = false"
           >
             Close
           </v-btn>
@@ -389,6 +389,7 @@ export default {
     },
     // names
     showNames( ) {
+      this.names = '';
       for( let i = 0; i < this.selectedStudents.length; i ++ ) {
         this.names += this.students.find(s => s.id === this.selectedStudents[ i ] ).name;
         if(i < this.selectedStudents.length - 1) {
