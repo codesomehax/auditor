@@ -18,6 +18,13 @@
     </v-col>
     <v-spacer/>
     <v-col cols="6" md="2">
+      <v-btn
+        color="success"
+        @click="loggedin ? logout() : loginWindow = true">
+        {{loggedin ? 'Log out' : 'Log in'}}
+      </v-btn>
+    </v-col>
+    <v-col cols="6" md="2">
       <router-link :to="{ name: 'Mail', query: { action: 'create' } }">
         <v-btn
           color="success">
@@ -46,10 +53,10 @@
           <tr v-for="(mail, i) in sortedMails"
               :key="mail.id">
             <td>{{(i+1)*currentPage}}</td>
-            <td>{{mail.name}}</td>
+            <td>{{mail.topic}}</td>
             <td>
-              <div v-if="mail.text.length < 80"> {{mail.text}}</div>
-              <div v-else> {{mail.text.substring(0, 80)+'...'}}</div>
+              <div v-if="mail.body.length < 80"> {{mail.body}}</div>
+              <div v-else> {{mail.body.substring(0, 80)+'...'}}</div>
             </td>
             <td class="text-right">
               <router-link tag="button" :to="{ name: 'Mail', query: { action: 'edit', id: mail.id } }">
@@ -93,10 +100,72 @@
         </v-col>
       </v-row>
     </base-material-card>
+  <v-dialog
+      v-model="loginWindow"
+      max-width="300">
+      <v-card>
+        <v-card-title class="primary--text display-2">
+          Login
+        <v-spacer />
+      
+        <v-icon
+          aria-label="Close"
+          @click="loginWindow = false, userMail='', userPassword=''"
+        >
+          mdi-close
+        </v-icon>
+        </v-card-title>
+
+        <v-card-text>
+          <v-row>
+            <v-text-field
+              v-model="userLogin"
+              label="Mail"
+              hint="example@example.com"
+              outlined
+              clearable
+              single-line
+            />
+            <v-text-field
+              v-model="userPassword"
+              :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="show1 ? 'text' : 'password'"
+              label="Password"
+              @click:append="show1 = !show1"
+              outlined
+              clearable
+              single-line
+            />
+          </v-row>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="login(), loginWindow = false"
+          >
+            Ok
+          </v-btn>
+          <v-btn
+            color="primary"
+            text
+            @click="loginWindow = false, userMail='', userPassword=''"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
+import { get, post, del } from '../../helpers/api'
+
 export default {
   name: 'MailsList',
 
@@ -108,7 +177,12 @@ export default {
     currentPage: 1,
     prev: false,
     next: true,
-    mails: []
+    mails: [],
+    loggedin: true,
+    loginWindow: false,
+    userLogin: '',
+    userPassword: '',
+    show1: false
   }),
 
   computed: {
@@ -139,19 +213,9 @@ export default {
   methods: {
     // get information
     getMails() {
-      // TODO: get data from backend
-      this.mails = [ 
-        {
-          id: 1254,
-          name: "Keep going!",
-          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-        },
-        {
-          id: 1243,
-          name: "Lorem ipsum",
-          text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
-        },
-      ]
+      get(this, '/template/all', '', response=>{
+        this.mails = response.data;
+      })
     },
     // sorting
     sort ( col ) {
@@ -172,10 +236,37 @@ export default {
     },
     // remove
     deleteMail( id ) {
-      // TODO: send id and command to backend
-      var mail = this.mails.find(s => s.id === id )
-      this.mails.splice( this.mails.indexOf( mail ), 1 )
+      del(this, '/template/'+id, '',  () => { 
+        this.tableInfo = '';
+        this.mails.splice( this.mails.indexOf( this.mails.find(s => s.id === id ) ), 1 );
+        this.$store.dispatch('setSnackbar', {text: "Success"});
+      }, error => {
+        this.$store.dispatch('setSnackbar', {text: error, color: "error"});
+      });
     },
+    login() {
+      let data = {
+        userMail: this.userLogin,
+        password: this.userPassword
+      }
+
+      post(this, '/mail/register', data, response => {
+        this.$store.dispatch('setSnackbar', {text: response.data});
+        this.userLogin = '';
+        this.userPassword = '';
+        this.loggedin = true;
+      }, error => {
+        this.$store.dispatch('setSnackbar', {text: error, color: "error"});
+      });
+    },
+    logout() {
+      post(this, '/mail/logout', '', () => {
+        this.$store.dispatch('setSnackbar', {text: "Success"});
+        this.loggedin = false;
+      }, error => {
+        this.$store.dispatch('setSnackbar', {text: error, color: "error"});
+      });
+    }
   },
   created() {
     this.getMails();

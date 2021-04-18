@@ -100,7 +100,7 @@
         <v-btn
           v-if="selectedStudents.length>0"
           color="success"
-          @click="send=true, showMails()">
+          @click="send=true, showNames()">
           Send mails
         </v-btn>
       </v-col>
@@ -177,13 +177,30 @@
           
         <v-icon
           aria-label="Close"
-          @click="send=false, mails=''"
+          @click="send=false, names=''"
         >
           mdi-close
         </v-icon>
         </v-card-title>
-        <v-card-text v-model="mails" id="tocopy">
-          {{mails}}
+        <v-card-text v-model="names" id="tocopy">
+          Chosen students: {{names}}
+          <v-text-field
+            v-model="studentMails"
+            label="Mails"
+            hint="example@example.com, example2@example.com"
+            outlined
+            clearable
+          />
+          <v-select v-model="selectedMail"
+            :items ="mails"
+            item-value = "body"
+            item-text = "topic"
+            prepend-icon="mdi-format-align-justify"
+            menu-props="auto"
+            hide-details
+            label="Select a mail to send"
+            single-line
+          />
         </v-card-text>
 
         <v-divider></v-divider>
@@ -193,14 +210,14 @@
           <v-btn
             color="primary"
             text
-            @click="copyMails()"
+            @click="sendMals()"
           >
-            Copy to clipboard
+            Ok
           </v-btn>
           <v-btn
             color="primary"
             text
-            @click="send = false, mails = ''"
+            @click="send = false, names = ''"
           >
             Close
           </v-btn>
@@ -259,18 +276,21 @@ export default {
     currentSort: 'Name',
     currentSortDir: 1,
     pageSize: 10,
-    pageSizeOptions: [2, 5, 10, 15, 20, 25, 30],
+    pageSizeOptions: [5, 10, 15, 20, 25, 30],
     currentPage: 1,
     prev: false,
     next: true,
     send: false,
     files: [],
     addFiles: false,
-    mails: '',
+    names: '',
     selectedStudents: [],
     allSelected: false,
     students: [],
-    del: ''
+    del: '',
+    studentMails: '',
+    selectedMail: '',
+    mails: []
   }),
   
   computed: {
@@ -306,6 +326,11 @@ export default {
     getStudents() {
       get(this, '/transcript/all', '', response=>{
         this.students = response.data;
+      })
+    },
+    getMails() {
+      get(this, '/template/all', '', response=>{
+        this.mails = response.data;
       })
     },
     // sorting
@@ -362,15 +387,14 @@ export default {
         console.log("There are no files.");
       }
     },
-    // mails
-    showMails( ) {
+    // names
+    showNames( ) {
       for( let i = 0; i < this.selectedStudents.length; i ++ ) {
-        this.mails += this.students.find(s => s.id === this.selectedStudents[ i ] ).mail;
-        this.mails += ', '
+        this.names += this.students.find(s => s.id === this.selectedStudents[ i ] ).name;
+        if(i < this.selectedStudents.length - 1) {
+          this.names += ', '
+        }
       }
-    },
-    copyMails() {
-      navigator.clipboard.writeText(this.mails);
     },
     // remove
     removeStudents( ids ) {
@@ -392,11 +416,30 @@ export default {
     // router
     goToAudit( id ){
       this.$router.push({ name: 'Student Audit', params: { id: id } })
+    },
+    // mails
+    sendMals() {
+      let data = [
+        {
+          "studentMails": this.studentMails.split(','),
+          "message": this.selectedMail
+        }
+      ]
+
+      post(this, '/mail/send', data, response => {
+        this.$store.dispatch('setSnackbar', {text: "Success"});
+        this.selectedMail = '';
+        this.studentMails = '';
+        this.send = false;
+      }, error => {
+        this.$store.dispatch('setSnackbar', {text: error, color: "error"});
+      });
     }
   },
 
   created() {
     this.getStudents();
+    this.getMails();
     this.next = ((this.currentPage*this.pageSize) < this.students.length) ? true : false;
   },
 }
