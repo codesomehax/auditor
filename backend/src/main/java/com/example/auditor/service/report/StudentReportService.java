@@ -34,6 +34,9 @@ public class StudentReportService {
     private final ReportTermCourseRepository courseRepository;
 
     public StudentReport createReport(Long studentId, Long curriculumId) {
+        if (reportRepository.existsById(studentId)) {
+            reportRepository.deleteById(studentId);
+        }
         var curriculumOpt = curriculumRepository.findById(curriculumId);
         var recordOpt = recordRepository.findById(studentId);
 
@@ -122,6 +125,7 @@ public class StudentReportService {
                 .stream()
                 .map(ReportRequirement::fromCurriculumRequirement)
                 .collect(Collectors.toList()));
+        resultReport.setCurriculumId(curriculumId);
         resultReport.setId(recordEntity.getId());
         resultReport.setCredits(recordEntity.getCreditsEarned());
         resultReport.setCompleteRequirements(completedRequirements);

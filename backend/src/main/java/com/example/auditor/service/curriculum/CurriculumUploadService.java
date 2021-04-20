@@ -2,7 +2,6 @@ package com.example.auditor.service.curriculum;
 
 import com.example.auditor.domain.curriculum.Curriculum;
 import com.example.auditor.domain.curriculum.Requirement;
-import com.example.auditor.domain.curriculum.RequirementType;
 import com.example.auditor.repository.curriculum.CurriculumRepository;
 import com.example.auditor.repository.curriculum.RequirementRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +49,7 @@ public class CurriculumUploadService {
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
 
             Sheet sheet = wb.getSheetAt(0);
-            RequirementType lastRequirementType = null;
+            String lastRequirementType = null;
 
             for (int i = 0; i < sheet.getLastRowNum(); i++) {
                 Cell firstColumnCell = sheet.getRow(i).getCell(0);
@@ -59,7 +58,7 @@ public class CurriculumUploadService {
 
                 if (firstColumnValue.startsWith(requirementTypePrefix)) {
                     int prefixLength = requirementTypePrefix.length();
-                    lastRequirementType = new RequirementType(null, firstColumnValue.substring(prefixLength).strip());
+                    lastRequirementType = firstColumnValue.substring(prefixLength).strip();
                 } else if (lastRequirementType == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Requirements must be annotated by at least one category");
                 } else if (firstColumnValue.startsWith(requirementsRowTerminator)) {

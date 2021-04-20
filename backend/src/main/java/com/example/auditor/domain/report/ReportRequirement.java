@@ -24,8 +24,7 @@ public class ReportRequirement {
     private String patterns;
     private Integer credit;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private ReportRequirementType type;
+    private String type;
 
 
     public static ReportRequirement fromCurriculumRequirement(Requirement requirement) {
@@ -34,7 +33,7 @@ public class ReportRequirement {
                 .name(requirement.getName())
                 .patterns(requirement.getPatterns())
                 .credit(requirement.getCredit())
-                .type(ReportRequirementType.fromCurriculumRequirementType(requirement.getType()))
+                .type(requirement.getType())
                 .build();
     }
 

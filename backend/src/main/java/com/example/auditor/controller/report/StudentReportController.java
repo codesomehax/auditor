@@ -4,8 +4,10 @@ import com.example.auditor.domain.report.StudentReport;
 import com.example.auditor.dto.StudentReportDto;
 import com.example.auditor.service.report.StudentReportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -31,21 +33,30 @@ public class StudentReportController {
         );
     }
 
-    @PostMapping("{reportId}/detachCourse")
-    public void detachCourse(@PathVariable Long reportId, @RequestParam Long courseId) {
-        reportService.detachCompletedCourse(reportId, courseId);
+    @PostMapping("{reportId}/detachCourses")
+    public void detachCourse(@PathVariable Long reportId, @RequestParam Long[] courseIds) {
+        for (var i : courseIds) {
+            reportService.detachCompletedCourse(reportId, i);
+        }
     }
 
-    @PostMapping("{reportId}/detachRequirement")
-    public void detachRequirement(@PathVariable Long reportId, @RequestParam Long requirementId) {
-        reportService.detachRequirement(reportId, requirementId);
+    @PostMapping("{reportId}/detachRequirements")
+    public void detachRequirement(@PathVariable Long reportId, @RequestParam Long[] requirementIds) {
+        for (var i : requirementIds) {
+            reportService.detachRequirement(reportId, i);
+        }
     }
 
     @PostMapping("{reportId}/mapRequirement")
     public void mapRequirement(@PathVariable Long reportId,
-                               @RequestParam Long courseId,
-                               @RequestParam Long requirementId) {
-        reportService.mapRequirement(reportId, courseId, requirementId);
+                               @RequestParam Long[] courseIds,
+                               @RequestParam Long[] requirementIds) {
+        if (courseIds.length != requirementIds.length) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Number of courses and requirements to map is not equal");
+        }
+        for (int i = 0; i < courseIds.length; i++) {
+            reportService.mapRequirement(reportId, courseIds[i], requirementIds[i]);
+        }
     }
 
     @DeleteMapping("{id}")

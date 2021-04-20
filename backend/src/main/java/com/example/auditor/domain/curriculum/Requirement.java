@@ -24,7 +24,6 @@ public class Requirement {
     private String patterns;
     private Integer credit;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private RequirementType type;
+    private String type;
 
 }
