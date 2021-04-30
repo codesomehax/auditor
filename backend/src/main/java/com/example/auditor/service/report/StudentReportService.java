@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,8 +52,11 @@ public class StudentReportService {
         var curriculumEntity = curriculumOpt.get();
         var recordEntity = recordOpt.get();
         var requiredCourses = curriculumEntity
-                .getRequirements();
-        requiredCourses.sort(Comparator.comparing(Requirement::getId));
+                .getRequirements()
+                .stream()
+                .map(ReportRequirement::fromCurriculumRequirement)
+                .sorted(Comparator.comparing(ReportRequirement::getId))
+                .collect(Collectors.toList());
         var completedCourses = recordEntity
                 .getStudentTerms()
                 .stream()
@@ -61,7 +65,7 @@ public class StudentReportService {
                 .collect(Collectors.toList());
         var resultReport = new StudentReport();
         var completedRequirements = new ArrayList<ReportRequirementWithCourse>();
-        var requirementsToRemove = new ArrayList<Requirement>();
+        var requirementsToRemove = new ArrayList<ReportRequirement>();
 
         for (var course : requiredCourses) {
             if (course.getPatterns().contains(",")) {
@@ -79,7 +83,7 @@ public class StudentReportService {
                                         ReportRequirementWithCourse
                                                 .builder()
                                                 .course(ReportTermCourse.fromTranscriptTermCourse(candidate))
-                                                .requirement(ReportRequirement.fromCurriculumRequirement(course))
+                                                .requirement(course)
                                                 .build()
                                 );
 
@@ -107,7 +111,7 @@ public class StudentReportService {
                                     ReportRequirementWithCourse
                                             .builder()
                                             .course(ReportTermCourse.fromTranscriptTermCourse(candidate))
-                                            .requirement(ReportRequirement.fromCurriculumRequirement(course))
+                                            .requirement(course)
                                             .build()
                             );
 
@@ -121,10 +125,7 @@ public class StudentReportService {
                 .stream()
                 .map(ReportTermCourse::fromTranscriptTermCourse)
                 .collect(Collectors.toList()));
-        resultReport.setUnmappedRequirements(requiredCourses
-                .stream()
-                .map(ReportRequirement::fromCurriculumRequirement)
-                .collect(Collectors.toList()));
+        resultReport.setUnmappedRequirements(new ArrayList<>(requiredCourses));
         resultReport.setCurriculumId(curriculumId);
         resultReport.setId(recordEntity.getId());
         resultReport.setCredits(recordEntity.getCreditsEarned());

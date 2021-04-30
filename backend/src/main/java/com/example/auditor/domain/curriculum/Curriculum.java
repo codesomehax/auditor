@@ -23,7 +23,7 @@ public class Curriculum {
     private String major;
     private Integer year;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     private List<Requirement> requirements;
 
 }
