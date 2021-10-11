@@ -2,6 +2,7 @@ package com.example.auditor.service.curriculum;
 
 import com.example.auditor.domain.curriculum.Curriculum;
 import com.example.auditor.domain.curriculum.Requirement;
+import com.example.auditor.dto.RequirementDto;
 import com.example.auditor.repository.curriculum.CurriculumRepository;
 import com.example.auditor.repository.curriculum.RequirementRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,6 +101,34 @@ public class CurriculumUploadService {
         curriculum.setRequirements(requirements);
         return curriculumRepository.save(curriculum);
     }
+
+
+    public Curriculum bindRequirements(Long id, List<RequirementDto> dtos) {
+
+        Curriculum curriculum = curriculumRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find curriculum with specified id"));
+
+        List<Requirement> requirements = new LinkedList<>();
+
+        for (RequirementDto dto : dtos) {
+
+            Requirement requirement = requirementRepository.save(
+                    Requirement.builder()
+                        .credit(ectcMode ? dto.getCredit() * 2 : dto.getCredit())
+                        .name(dto.getName())
+                        .type(dto.getType())
+                    .build()
+            );
+
+            System.out.println(requirement);
+
+            requirements.add(requirement);
+        }
+
+        curriculum.setRequirements(requirements);
+        return curriculumRepository.save(curriculum);
+    }
+
 
     private String validateCellAndGetString(Cell cell, int i) {
         if (cell == null || cell.getCellType() != CellType.STRING) {

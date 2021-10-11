@@ -39,7 +39,8 @@
                 <tbody>
                 <tr v-for="(course, index) in curriculum.requirements" :key="index" >
                     <td>{{course.name}}</td>
-                    <td>{{course.type.name}}</td>
+                    <!--<td>{{course.type.name}}</td>-->
+                    <td>{{course.type}}</td>
                     <td>{{course.credit}}</td>
                 </tr>
                 <tr>

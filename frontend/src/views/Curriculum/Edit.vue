@@ -105,6 +105,7 @@
                                                 <v-btn
                                                         color="success"
                                                         class="mr-0 float-right"
+                                                        @click="saveManualRequirements"
                                                 >
                                                     Save
                                                 </v-btn>
@@ -134,7 +135,7 @@
                                                         label="Course name"
                                                 /></td>
                                                 <td><v-text-field
-                                                        v-model="course.type.name"
+                                                        v-model="course.type"
                                                         label="Course type"
                                                 /></td>
                                                 <td><v-text-field
@@ -203,7 +204,7 @@
                                 <tbody>
                                 <tr v-for="(course, index) in curriculum.requirements" :key="index" >
                                     <td>{{course.name}}</td>
-                                    <td>{{course.type.name}}</td>
+                                    <td>{{course.type}}</td>
                                     <td>{{course.credit}}</td>
                                 </tr>
                                 <tr>
@@ -330,12 +331,10 @@
 
         },
 
-        addCourse(){
+        addCourse() {
           let c = {
             name: '',
-            type: {
-              name:''
-            },
+            type: '',
             credit: ''
           };
           this.form.curriculum.requirements.push(c);
@@ -349,7 +348,7 @@
           window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
         },
 
-        submitFile(){
+        submitFile() {
           let _this = this;
           let formData = new FormData();
           formData.append('file', this.files);
@@ -368,6 +367,26 @@
           }, {
                 'Content-Type': 'multipart/form-data'
               });
+
+        },
+
+        saveManualRequirements() {
+          let _this = this;
+
+          let data = _this.form.curriculum.requirements
+
+
+          post(_this, '/curriculum/'+_this.curriculumId + '/manual', data, response=> {
+            _this.curriculum = response.data;
+            _this.stage = 2;
+            _this.tab = 2;
+            _this.$store.dispatch('setSnackbar', {text: "Curriculum successfully filled"})
+          }, error=>{
+            _this.$store.dispatch('setSnackbar', {
+              text: error,
+              color: "error"
+            })
+          });
 
         },
 
@@ -399,7 +418,7 @@
       },
 
       created() {
-        if (this.$route.path.includes('edit')){
+        if (this.$route.path.includes('edit')) {
           this.getCurriculum();
         }
       }

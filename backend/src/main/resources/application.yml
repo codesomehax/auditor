@@ -3,7 +3,8 @@ spring:
     console:
       enabled: true
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./db}
+    url: jdbc:h2:mem:testdb
+    #url: ${DB_URL:jdbc:h2:file:./db}
   data:
     jpa:
       repositories:
