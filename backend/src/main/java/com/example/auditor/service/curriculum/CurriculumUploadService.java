@@ -108,6 +108,8 @@ public class CurriculumUploadService {
         Curriculum curriculum = curriculumRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find curriculum with specified id"));
 
+        List<Requirement> previousRequirements = curriculum.getRequirements();
+
         List<Requirement> requirements = new LinkedList<>();
 
         for (RequirementDto dto : dtos) {
@@ -126,6 +128,8 @@ public class CurriculumUploadService {
         }
 
         curriculum.setRequirements(requirements);
+        // requirementRepository.deleteAll(previousRequirements);
+
         return curriculumRepository.save(curriculum);
     }
 
