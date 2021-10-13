@@ -29,4 +29,4 @@ If you want to use in-memory database, then specify the `DB_URL` flag which shou
 
 ` java -jar auditor.jar --DB_URL=jdbc:h2:mem:testdb`
 
-
+--DB_URL=jdbc:h2:mem:testdb

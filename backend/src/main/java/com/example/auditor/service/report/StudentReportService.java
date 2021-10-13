@@ -1,10 +1,13 @@
 package com.example.auditor.service.report;
 
+import com.example.auditor.domain.curriculum.Curriculum;
 import com.example.auditor.domain.curriculum.Requirement;
 import com.example.auditor.domain.report.ReportRequirement;
 import com.example.auditor.domain.report.ReportRequirementWithCourse;
 import com.example.auditor.domain.report.ReportTermCourse;
 import com.example.auditor.domain.report.StudentReport;
+import com.example.auditor.domain.transcript.StudentRecord;
+import com.example.auditor.domain.transcript.StudentTerm;
 import com.example.auditor.domain.transcript.TermCourse;
 import com.example.auditor.repository.curriculum.CurriculumRepository;
 import com.example.auditor.repository.report.ReportRequirementRepository;
@@ -17,10 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,104 +35,108 @@ public class StudentReportService {
     private final ReportTermCourseRepository courseRepository;
 
     public StudentReport createReport(Long studentId, Long curriculumId) {
+
         if (reportRepository.existsById(studentId)) {
             reportRepository.deleteById(studentId);
         }
-        var curriculumOpt = curriculumRepository.findById(curriculumId);
-        var recordOpt = recordRepository.findById(studentId);
 
-        if (curriculumOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid curriculum id");
-        }
 
-        if (recordOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student record id");
-        }
+        Curriculum curriculum = curriculumRepository.findById(curriculumId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid curriculum id"));
+        StudentRecord studentRecord = recordRepository.findById(studentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student record id"));
 
-        var curriculumEntity = curriculumOpt.get();
-        var recordEntity = recordOpt.get();
-        var requiredCourses = curriculumEntity
+
+        List<ReportRequirement> requirements = curriculum
                 .getRequirements()
                 .stream()
                 .map(ReportRequirement::fromCurriculumRequirement)
-                .sorted(Comparator.comparing(ReportRequirement::getId))
+                .sorted(Comparator.comparingInt(requirement -> longestPatternLength((ReportRequirement) requirement)).reversed())
                 .collect(Collectors.toList());
-        var completedCourses = recordEntity
+
+        List<ReportTermCourse> completedCourses = studentRecord
                 .getStudentTerms()
                 .stream()
                 .flatMap(x -> x.getTermCourses().stream())
                 .sorted(Comparator.comparingInt(TermCourse::getCredits))
+                .map(termCourse -> ReportTermCourse.fromTranscriptTermCourse(termCourse))
                 .collect(Collectors.toList());
-        var resultReport = new StudentReport();
-        var completedRequirements = new ArrayList<ReportRequirementWithCourse>();
-        var requirementsToRemove = new ArrayList<ReportRequirement>();
 
-        for (var course : requiredCourses) {
-            if (course.getPatterns().contains(",")) {
-                for (var pat : course.getPatterns().split(",")) {
-                    TermCourse candidate = null;
-                    for (var completed : completedCourses) {
-                        if (completed.getCode().toLowerCase().startsWith(pat.toLowerCase())
-                                && completed.getCredits() >= course.getCredit()) {
-                            candidate = completed;
-                        }
-                    }
-                    if (candidate != null) {
-                        completedRequirements
-                                .add(
-                                        ReportRequirementWithCourse
-                                                .builder()
-                                                .course(ReportTermCourse.fromTranscriptTermCourse(candidate))
-                                                .requirement(course)
-                                                .build()
-                                );
 
-                        completedCourses.remove(candidate);
-                        requirementsToRemove.add(course);
-                    }
+        List<ReportTermCourse> unmappedCourses = completedCourses;
+        List<ReportRequirement> unmappedRequirements = requirements;
+        List<ReportRequirementWithCourse> completeRequirements = new ArrayList<>();
+        List<ReportTermCourse> mappedCourses = new ArrayList<>();
 
-                }
-            } else {
-                var pattern = course.getPatterns().strip();
-                TermCourse candidate = null;
-                for (var completed : completedCourses) {
-                    if (completed.getCode().toLowerCase().startsWith(pattern.toLowerCase())
-                            && completed.getCredits() >= course.getCredit()) {
-                        candidate = completed;
-                    } else {
-                        if (pattern.equals("*") && completed.getCredits() >= course.getCredit()) {
-                            candidate = completed;
-                        }
-                    }
-                }
-                if (candidate != null) {
-                    completedRequirements
-                            .add(
-                                    ReportRequirementWithCourse
-                                            .builder()
-                                            .course(ReportTermCourse.fromTranscriptTermCourse(candidate))
-                                            .requirement(course)
-                                            .build()
-                            );
+        for (ReportTermCourse completedCourse : completedCourses) {
 
-                    completedCourses.remove(candidate);
-                    requirementsToRemove.add(course);
+            ReportRequirement reportRequirement = firstMatchingRequirement(completedCourse, unmappedRequirements);
+            if (reportRequirement != null) {
+
+                completeRequirements.add(
+                        ReportRequirementWithCourse
+                                .builder()
+                                    .requirement(reportRequirement)
+                                    .course(completedCourse)
+                                .build()
+                );
+
+                unmappedRequirements.remove(reportRequirement);
+                mappedCourses.add(completedCourse);
+
+            }
+
+        }
+
+        unmappedCourses.removeAll(mappedCourses);
+
+
+        return reportRepository.save(
+                StudentReport
+                .builder()
+                        .id(studentRecord.getId())
+                        .curriculumId(curriculum.getId())
+                        .credits(studentRecord.getCreditsEarned())
+                        .completeRequirements(completeRequirements)
+                        .unmappedRequirements(unmappedRequirements)
+                        .unmappedCourses(unmappedCourses)
+                .build()
+        );
+
+    }
+
+
+    private ReportRequirement firstMatchingRequirement(ReportTermCourse completedCourse, List<ReportRequirement> requirements) {
+
+        String courseCode = completedCourse.getCode();
+
+        for (ReportRequirement requirement : requirements) {
+
+            String[] patterns = requirement.getPatterns().split(",");
+            for (String pattern : patterns) {
+
+                if (courseCode.toLowerCase().startsWith(pattern.strip().toLowerCase()) || pattern.equals("*")) {
+
+                    return requirement;
                 }
             }
         }
-        requiredCourses.removeAll(requirementsToRemove);
-        resultReport.setUnmappedCourses(completedCourses
-                .stream()
-                .map(ReportTermCourse::fromTranscriptTermCourse)
-                .collect(Collectors.toList()));
-        resultReport.setUnmappedRequirements(new ArrayList<>(requiredCourses));
-        resultReport.setCurriculumId(curriculumId);
-        resultReport.setId(recordEntity.getId());
-        resultReport.setCredits(recordEntity.getCreditsEarned());
-        resultReport.setCompleteRequirements(completedRequirements);
-        return reportRepository.save(resultReport);
 
+        return null;
     }
+
+
+    private int longestPatternLength(ReportRequirement requirement) {
+
+        return Collections.max(
+                Arrays.stream(
+                        requirement
+                        .getPatterns()
+                        .split(","))
+                        .map(pattern -> pattern.length())
+                        .collect(Collectors.toList()
+                )
+        );
+    }
+
 
     public Optional<StudentReport> getById(Long id) {
         return reportRepository.findById(id);
