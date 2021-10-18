@@ -115,34 +115,46 @@
                                         <v-simple-table fixed-header height="600px">
                                             <thead>
                                             <tr>
-                                                <th class="primary--text display-1">
-                                                    Course name
-                                                </th>
-                                                <th class="primary--text display-1">
-                                                    Course type
-                                                </th>
-                                                <th class="primary--text display-1">
-                                                    Credits
-                                                </th>
-                                                <th></th>
-
+                                              <th class="primary--text display-1">
+                                                Course name
+                                              </th>
+                                              <th class="primary--text display-1">
+                                                Course type
+                                              </th>
+                                              <th class="primary--text display-1">
+                                                Credits
+                                              </th>
+                                              <th class="primary--text display-1">
+                                                Patterns
+                                              </th>
+                                              <th class="primary--text display-1">
+                                                Antipatterns
+                                              </th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <tr v-for="(course, index) in form.curriculum.requirements" :key="index" >
-                                                <td><v-text-field
-                                                        v-model="course.name"
-                                                        label="Course name"
-                                                /></td>
-                                                <td><v-text-field
-                                                        v-model="course.type"
-                                                        label="Course type"
-                                                /></td>
-                                                <td><v-text-field
-                                                        v-model="course.credit"
-                                                        label="Credits"
-                                                        type="number"
-                                                /></td>
+                                              <td><v-text-field
+                                                  v-model="course.name"
+                                                  label="Course name"
+                                              /></td>
+                                              <td><v-text-field
+                                                  v-model="course.type"
+                                                  label="Course type"
+                                              /></td>
+                                              <td><v-text-field
+                                                  v-model="course.credit"
+                                                  label="Credits"
+                                                  type="number"
+                                              /></td>
+                                              <td><v-text-field
+                                                  v-model="course.patterns"
+                                                  label="Patterns"
+                                              /></td>
+                                              <td><v-text-field
+                                                  v-model="course.antipatterns"
+                                                  label="Antipatterns"
+                                              /></td>
                                                 <td class="text-right">
                                                     <v-tooltip open-delay="83" bottom>
                                                         <template v-slot:activator="{ on, attrs }">
@@ -182,37 +194,9 @@
                                     </v-col>
                                 </v-row>
                             </v-card>
-                            <v-simple-table>
-                                <thead>
-                                <tr>
-                                    <th class="font-weight-bold display-2">{{curriculum.major}}</th>
-                                    <th class="font-weight-bold display-2">{{curriculum.year}}</th>
-                                </tr>
-                                <tr>
-                                    <th class="primary--text display-1">
-                                        Course name
-                                    </th>
-                                    <th class="primary--text display-1">
-                                        Course type
-                                    </th>
-                                    <th class="primary--text display-1">
-                                        Credits
-                                    </th>
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                <tr v-for="(course, index) in curriculum.requirements" :key="index" >
-                                    <td>{{course.name}}</td>
-                                    <td>{{course.type}}</td>
-                                    <td>{{course.credit}}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Total Credits</td>
-                                    <td class="font-weight-bold">{{totalCreditsParsed}}</td>
-                                </tr>
-                                </tbody>
-                            </v-simple-table>
+                          <RequirementsTable
+                              v-bind:curriculum="curriculum"
+                          />
                         </v-tab-item>
                     </v-tabs-items>
                 </base-material-card>
@@ -283,6 +267,7 @@
 
 <script>
     import { get, post } from '../../helpers/api'
+    import RequirementsTable from "@/views/components/curriculum/RequirementsTable";
 
     export default {
 
@@ -335,7 +320,9 @@
           let c = {
             name: '',
             type: '',
-            credit: ''
+            credit: '',
+            patterns: '',
+            antipatterns: ''
           };
           this.form.curriculum.requirements.push(c);
         },
@@ -415,6 +402,10 @@
             this.curriculum.requirements.forEach(x => sum+=parseInt(x.credit));
           return sum;
         },
+      },
+
+      components: {
+        RequirementsTable
       },
 
       created() {

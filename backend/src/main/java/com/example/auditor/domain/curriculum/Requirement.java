@@ -22,6 +22,7 @@ public class Requirement {
 
     private String name;
     private String patterns;
+    private String antipatterns;
     private Integer credit;
 
     private String type;

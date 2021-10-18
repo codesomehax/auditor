@@ -17,50 +17,25 @@
                 :title="$t('curriculum.curriculum')"
                 class="px-5 py-3"
         >
-            <v-simple-table>
-                <thead>
-                <tr>
-                    <th class="font-weight-bold display-2">{{curriculum.major}}</th>
-                    <th class="font-weight-bold display-2">{{curriculum.year}}</th>
-                </tr>
-                <tr>
-                    <th class="primary--text display-1">
-                        Course name
-                    </th>
-                    <th class="primary--text display-1">
-                        Course type
-                    </th>
-                    <th class="primary--text display-1">
-                        Credits
-                    </th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr v-for="(course, index) in curriculum.requirements" :key="index" >
-                    <td>{{course.name}}</td>
-                    <!--<td>{{course.type.name}}</td>-->
-                    <td>{{course.type}}</td>
-                    <td>{{course.credit}}</td>
-                </tr>
-                <tr>
-                    <td class="font-weight-bold">Total Credits</td>
-                    <td class="font-weight-bold">{{totalCredits}}</td>
-                    <td></td>
-                </tr>
-                </tbody>
-            </v-simple-table>
+          <RequirementsTable
+            v-bind:curriculum="curriculum"
+          />
         </base-material-card>
     </v-container>
 </template>
 
 <script>
     import { get } from '../../helpers/api'
+    import RequirementsTable from '@/views/components/curriculum/RequirementsTable'
     export default {
       data () {
         return {
           curriculum: ''
         }
+      },
+
+      components: {
+        RequirementsTable
       },
 
       methods: {
@@ -71,13 +46,6 @@
             _this.curriculum = response.data;
           });
         }
-      },
-      computed: {
-        totalCredits() {
-          let sum = 0;
-          this.curriculum.requirements.forEach(x => sum+=parseInt(x.credit));
-          return sum;
-        },
       },
       created() {
         this.getCurriculum()

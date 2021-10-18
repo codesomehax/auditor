@@ -1,6 +1,7 @@
 package com.example.auditor.domain.report;
 
 
+import com.example.auditor.domain.curriculum.Requirement;
 import com.example.auditor.domain.transcript.TermCourse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +32,5 @@ public class ReportTermCourse {
                 .gradePoint(termCourse.getGradePoint())
                 .build();
     }
+
 }

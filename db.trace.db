@@ -936,3 +936,15 @@ Database is already closed (to disable automatic closing at VM shutdown, add ";D
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
 	at java.base/java.lang.Thread.run(Thread.java:832)
+2021-10-17 09:51:13 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Таблица "REQUIREMENTS" не найдена
+Table "REQUIREMENTS" not found; SQL statement:
+SELECT * FROM REQUIREMENTS WHERE ID = 2249 [42102-200]
+2021-10-17 09:51:17 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Таблица "REQUIREMENTS" не найдена
+Table "REQUIREMENTS" not found; SQL statement:
+SELECT * FROM REQUIREMENTS WHERE ID = 2249 [42102-200]
+2021-10-17 09:51:20 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Таблица "REQUIREMENTS" не найдена
+Table "REQUIREMENTS" not found; SQL statement:
+SELECT * FROM REQUIREMENTS WHERE ID = 2249 [42102-200]

@@ -22,8 +22,8 @@ public class ReportRequirement {
 
     private String name;
     private String patterns;
+    private String antipatterns;
     private Integer credit;
-
     private String type;
 
 
@@ -32,6 +32,7 @@ public class ReportRequirement {
                 .id(requirement.getId())
                 .name(requirement.getName())
                 .patterns(requirement.getPatterns())
+                .antipatterns(requirement.getAntipatterns())
                 .credit(requirement.getCredit())
                 .type(requirement.getType())
                 .build();

@@ -16,6 +16,7 @@ import com.example.auditor.repository.report.StudentReportRepository;
 import com.example.auditor.repository.transcript.StudentRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,6 +35,15 @@ public class StudentReportService {
     private final ReportRequirementRepository requirementRepository;
     private final ReportTermCourseRepository courseRepository;
 
+    @Value("${audit.parser.wildcard-character}")
+    private char wildcardCharacter;
+
+    @Value("${audit.parser.wildcard-pattern}")
+    private String wildCardPattern;
+
+    @Value("${audit.parser.not-matchable-pattern}")
+    private String notMatchablePattern;
+
     public StudentReport createReport(Long studentId, Long curriculumId) {
 
         if (reportRepository.existsById(studentId)) {
@@ -49,7 +59,7 @@ public class StudentReportService {
                 .getRequirements()
                 .stream()
                 .map(ReportRequirement::fromCurriculumRequirement)
-                .sorted(Comparator.comparingInt(requirement -> longestPatternLength((ReportRequirement) requirement)).reversed())
+                .sorted(Comparator.comparingInt(requirement -> shortestPatternLength((ReportRequirement) requirement)).reversed())
                 .collect(Collectors.toList());
 
         List<ReportTermCourse> completedCourses = studentRecord
@@ -68,7 +78,7 @@ public class StudentReportService {
 
         for (ReportTermCourse completedCourse : completedCourses) {
 
-            ReportRequirement reportRequirement = firstMatchingRequirement(completedCourse, unmappedRequirements);
+            ReportRequirement reportRequirement = firstSatisfiedRequirement(completedCourse, unmappedRequirements);
             if (reportRequirement != null) {
 
                 completeRequirements.add(
@@ -104,19 +114,15 @@ public class StudentReportService {
     }
 
 
-    private ReportRequirement firstMatchingRequirement(ReportTermCourse completedCourse, List<ReportRequirement> requirements) {
+    private ReportRequirement firstSatisfiedRequirement(ReportTermCourse completedCourse, List<ReportRequirement> requirements) {
 
         String courseCode = completedCourse.getCode();
 
         for (ReportRequirement requirement : requirements) {
 
-            String[] patterns = requirement.getPatterns().split(",");
-            for (String pattern : patterns) {
+            if (satisfies(courseCode, requirement)) {
 
-                if (courseCode.toLowerCase().startsWith(pattern.strip().toLowerCase()) || pattern.equals("*")) {
-
-                    return requirement;
-                }
+                return requirement;
             }
         }
 
@@ -124,9 +130,9 @@ public class StudentReportService {
     }
 
 
-    private int longestPatternLength(ReportRequirement requirement) {
+    private int shortestPatternLength(ReportRequirement requirement) {
 
-        return Collections.max(
+        return Collections.min(
                 Arrays.stream(
                         requirement
                         .getPatterns()
@@ -135,6 +141,90 @@ public class StudentReportService {
                         .collect(Collectors.toList()
                 )
         );
+    }
+
+
+    private boolean coincide(char courseCodeChar, char patternChar) {
+
+        if (patternChar == wildcardCharacter) {
+
+            return true;
+        }
+
+        return (Character.toLowerCase(courseCodeChar) == Character.toLowerCase(patternChar));
+    }
+
+    private boolean matches(String courseCode, String pattern) {
+
+        // Exceptions
+        if (pattern.equals(notMatchablePattern)) {
+
+            return false;
+        }
+
+        if (pattern.equals(wildCardPattern)) {
+
+            return true;
+        }
+
+        if (pattern.contains("-")) {
+
+            String[] courseCodeSplit = courseCode.split(" ");
+            String courseSubjectCode = courseCodeSplit[0];
+            int courseCodeLevel = Integer.parseInt(courseCodeSplit[1]);
+
+            String[] patternSplit = pattern.split(" ");
+            String patternSubjectCode = patternSplit[0];
+            String patternLevelRanges = patternSplit[1];
+
+            String[] patternLevelRangesSplit = patternLevelRanges.split("-");
+            int lower = Integer.parseInt(patternLevelRangesSplit[0]);
+            int upper = Integer.parseInt(patternLevelRangesSplit[1]);
+
+            if (lower > courseCodeLevel || courseCodeLevel > upper) {
+
+                return false;
+            }
+
+            courseCode = courseSubjectCode;
+            pattern = patternSubjectCode;
+        }
+
+        int l = Math.min(courseCode.length(), pattern.length());
+        for (int i = 0; i < l; i++) {
+
+            if (!coincide(courseCode.charAt(i), pattern.charAt(i))) {
+
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+
+    private boolean satisfies(String courseCode, ReportRequirement requirement) {
+
+        String[] patterns = requirement.getPatterns().split(",");
+        String[] antipatterns = requirement.getAntipatterns().split(",");
+
+
+        for (String antipattern : antipatterns) {
+
+            if (matches(courseCode, antipattern.strip())) {
+                return false;
+            }
+        }
+
+        for (String pattern : patterns) {
+
+            if (matches(courseCode, pattern.strip())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

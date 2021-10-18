@@ -30,6 +30,10 @@ audit:
     curriculum-ectc-notation: true
     type-prefix: "Category:"
     requirements-row-terminator: "Total"
+    not-matchable-pattern: ""
+    wildcard-pattern: "*"
+    wildcard-character: '?'
+
     transcript:
       regex:
         course-code: "^\\w+\\s*\\d{3}"

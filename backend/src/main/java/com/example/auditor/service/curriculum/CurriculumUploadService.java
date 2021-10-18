@@ -30,9 +30,6 @@ public class CurriculumUploadService {
     @Value("${audit.parser.requirements-row-terminator}")
     private String requirementsRowTerminator;
 
-    @Value("${audit.parser.curriculum-ectc-notation}")
-    private Boolean ectcMode;
-
     private final CurriculumRepository curriculumRepository;
 
     private final RequirementRepository requirementRepository;
@@ -70,8 +67,17 @@ public class CurriculumUploadService {
                     Cell secondColumnCell = sheet.getRow(i).getCell(1);
                     Integer credit = validateCellAndGetInteger(secondColumnCell, i);
 
-                    String patterns;
+                    String antipatterns = "";
+                    Cell antipatternsCell = sheet.getRow(i).getCell(3);
+                    if (antipatternsCell != null) {
+
+                        antipatterns = antipatternsCell.getStringCellValue().strip();
+                    }
+
+
                     Cell patternsCell = sheet.getRow(i).getCell(2);
+                    String patterns = "";
+
                     if (patternsCell == null || patternsCell.getCellType() == CellType.BLANK) {
                         patterns = firstColumnValue.strip();
                         patterns = patterns.replaceAll("\\p{Pd}", "-");
@@ -79,12 +85,15 @@ public class CurriculumUploadService {
                             patterns = patterns.split("-")[0].strip();
                         }
                     } else {
+
                         patterns = patternsCell.getStringCellValue().strip();
                     }
 
 
+
                     Requirement requirement = requirementRepository.save(Requirement.builder()
-                            .credit(ectcMode ? credit * 2 : credit)
+                            .credit(credit)
+                            .antipatterns(antipatterns)
                             .patterns(patterns)
                             .name(firstColumnValue)
                             .type(lastRequirementType)
@@ -116,9 +125,11 @@ public class CurriculumUploadService {
 
             Requirement requirement = requirementRepository.save(
                     Requirement.builder()
-                        .credit(ectcMode ? dto.getCredit() * 2 : dto.getCredit())
-                        .name(dto.getName())
-                        .type(dto.getType())
+                            .credit(dto.getCredit())
+                            .name(dto.getName())
+                            .type(dto.getType())
+                            .patterns(dto.getPatterns())
+                            .antipatterns(dto.getAntipatterns())
                     .build()
             );
 
