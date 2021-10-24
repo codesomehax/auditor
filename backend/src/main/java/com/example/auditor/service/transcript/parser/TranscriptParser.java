@@ -152,7 +152,9 @@ public class TranscriptParser {
     m.region(end, text.length());
     String credits = Strings.EMPTY;
     String grade = Strings.EMPTY;
+    String courseLetterGrade = Strings.EMPTY;
     if (m.find()) {
+      courseLetterGrade = m.group(1);
       credits = m.group(2);
       grade = m.group(3);
     }
@@ -162,7 +164,7 @@ public class TranscriptParser {
     if(!grade.equals("n/a")) {
       courseGradePoint = credits.isEmpty() ? 0f : Double.parseDouble(grade);
     }
-    return new TermCourse(null, courseCode, courseCredits, courseGradePoint);
+    return new TermCourse(null, courseCode, courseCredits, courseGradePoint, courseLetterGrade);
   }
 
   private String getTermGpa(Pair region){

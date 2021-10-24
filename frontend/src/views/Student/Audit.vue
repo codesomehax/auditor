@@ -147,7 +147,8 @@
           <th class="primary--text display-1">Credits</th>
           <th class="primary--text display-1">Taken</th>
           <th class="primary--text display-1">Credits</th>
-          <th class="primary--text display-1">Grades</th>
+          <th class="primary--text display-1">Grade Points</th>
+          <th class="primary--text display-1">Letter Grade</th>
         </tr>
         </thead>
 
@@ -180,6 +181,9 @@
           </td>
           <td>
             {{ course.course.gradePoint }}
+          </td>
+          <td>
+            {{ course.course.letterGrade }}
           </td>
         </tr>
         </tbody>
@@ -238,7 +242,8 @@
               <th></th>
               <th class="primary--text display-1">Taken Course</th>
               <th class="primary--text display-1">Credits</th>
-              <th class="primary--text display-1">Grades</th>
+              <th class="primary--text display-1">Grade Pts</th>
+              <th class="primary--text display-1">Letter Grade</th>
             </tr>
             </thead>
 
@@ -256,6 +261,9 @@
               </td>
               <td>
                 {{ course.gradePoint }}
+              </td>
+              <td>
+                {{ course.letterGrade }}
               </td>
             </tr>
             </tbody>

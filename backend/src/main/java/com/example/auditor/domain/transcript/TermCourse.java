@@ -21,5 +21,6 @@ public class TermCourse {
     private String code;
     private Integer credits;
     private Double gradePoint;
+    private String letterGrade;
 
 }

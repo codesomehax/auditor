@@ -23,6 +23,7 @@ public class ReportTermCourse {
     private String code;
     private Integer credits;
     private Double gradePoint;
+    private String letterGrade;
 
     public static ReportTermCourse fromTranscriptTermCourse(TermCourse termCourse) {
         return ReportTermCourse.builder()
@@ -30,6 +31,7 @@ public class ReportTermCourse {
                 .code(termCourse.getCode())
                 .credits(termCourse.getCredits())
                 .gradePoint(termCourse.getGradePoint())
+                .letterGrade(termCourse.getLetterGrade())
                 .build();
     }
 
