@@ -21,7 +21,7 @@
         <v-btn
             color="success"
             text
-            @click="downloadAudit()"
+            @click="showUploadFileDialog=true"
         >
           Update transcript
         </v-btn>
@@ -290,9 +290,11 @@
         </v-btn>
       </v-col>
     </v-row>
+
     <v-dialog
-        v-model="addFiles"
-        max-width="600">
+        v-model="showUploadFileDialog"
+        max-width="600px"
+    >
       <v-card>
         <v-card-title class="primary--text display-2">
           Add transcripts
@@ -300,7 +302,7 @@
 
           <v-icon
               aria-label="Close"
-              @click="addFiles = false"
+              @click="showUploadFileDialog=false"
           >
             mdi-close
           </v-icon>
@@ -334,13 +336,16 @@
           <v-btn
               color="primary"
               text
-              @click="addFiles = false, files = []"
+              @click="showUploadFileDialog=false, files = []"
           >
             Close
           </v-btn>
         </v-card-actions>
+
       </v-card>
     </v-dialog>
+
+
     <v-dialog
         v-model="dialog"
         max-width="600"
@@ -413,7 +418,8 @@ export default {
       mappingReqDisabled: false,
       dialog: false,
       del: false,
-      addFiles: false
+      addFiles: false,
+      showUploadFileDialog: false
     }
   },
 
@@ -436,6 +442,31 @@ export default {
   },
 
   methods: {
+    submitFiles() {
+      if ( this.files.length != 0 ) {
+        for(var i = 0; i < this.files.length; i ++ ) {
+          let formData = new FormData();
+          formData.append('file', this.files[i]);
+
+          post(this, '/transcript', formData, () => {
+            this.$store.dispatch('setSnackbar', {
+              text: "Transcript uploaded",
+            })
+          }, error =>{
+            this.$store.dispatch('setSnackbar', {
+              text: error.response ? error.response.data.message : error,
+              color: "error"
+            })
+          }, {
+            'Content-Type': 'multipart/form-data'
+          });
+        }
+        this.addFiles = false;
+        this.files = [];
+      } else {
+        console.log("There are no files.");
+      }
+    },
     getCurriculums() {
       get(this, '/curriculum', '', response => {
         this.curriculums = response.data;
