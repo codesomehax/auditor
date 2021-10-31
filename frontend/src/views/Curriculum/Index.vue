@@ -5,6 +5,13 @@
         <v-row justify="end">
             <v-col cols="1">
                 <v-btn
+                        @click="addFile = true"
+                >
+                    Add plan
+                </v-btn>
+            </v-col>
+            <v-col cols="1">
+                <v-btn
                         @click="$router.push({ name: 'Curriculum-edit', params: {id: curriculum.id} })"
                         color="success"
                 >
@@ -29,6 +36,66 @@
             v-bind:curriculum="curriculum"
           />
         </base-material-card>
+        <v-dialog
+            v-model="addFile"
+            max-width="600">
+            <v-card>
+                <v-card-title class="display-2">
+                    Upload Plan
+                    <v-spacer />
+
+                    <v-icon
+                        aria-label="Close"
+                        @click="addFile = false"
+                    >
+                        mdi-close
+                    </v-icon>
+                </v-card-title>
+
+                <v-card-text>
+                    <v-file-input
+                        v-model="files"
+                        show-size
+                        counter
+                        placeholder="Select file"
+                        prepend-icon="mdi-paperclip"
+                        outlined
+                        accept=".docx"
+                    >
+                        <template v-slot:selection="{ index, text }">
+                            <v-chip
+                                v-if="index < 2"
+                                dark
+                                label
+                                small
+                            >
+                                {{ text }}
+                            </v-chip>
+                        </template>
+                    </v-file-input>
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        color="primary"
+                        text
+                        @click="submitFile()"
+                    >
+                        Ok
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        text
+                        @click="addFile = false"
+                    >
+                        Close
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -38,7 +105,10 @@ import {download, get, post} from '../../helpers/api'
     export default {
       data () {
         return {
-          curriculum: ''
+          curriculum: '',
+          curriculumId: '',
+          addFile: false,
+          files: []
         }
       },
 
@@ -47,6 +117,29 @@ import {download, get, post} from '../../helpers/api'
       },
 
       methods: {
+
+        submitFile() {
+          let _this = this;
+          let formData = new FormData();
+          formData.append('file', this.files);
+          _this.curriculumId = this.$route.params.id;
+
+          post(_this, '/curriculum/'+_this.curriculumId + '/plan', formData, response=> {
+            _this.curriculum = response.data;
+            _this.stage = 2;
+            _this.tab = 2;
+            _this.addFile = false;
+            _this.$store.dispatch('setSnackbar', {text: "Curriculum successfully filled"})
+          }, error=>{
+            _this.$store.dispatch('setSnackbar', {
+              text: error,
+              color: "error"
+            })
+          }, {
+            'Content-Type': 'multipart/form-data'
+          });
+
+        },
 
         getCurriculum(){
           let _this = this;

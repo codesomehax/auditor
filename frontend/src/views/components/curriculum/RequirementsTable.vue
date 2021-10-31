@@ -22,6 +22,9 @@
           <th class="primary--text display-1">
             Antipatterns
           </th>
+          <th class="primary--text display-1">
+            Semester
+          </th>
         </tr>
       </thead>
 

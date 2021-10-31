@@ -24,6 +24,7 @@ public class ReportRequirement {
     private String patterns;
     private String antipatterns;
     private Integer credit;
+    private Integer semester;
     private String type;
 
 
@@ -35,6 +36,7 @@ public class ReportRequirement {
                 .antipatterns(requirement.getAntipatterns())
                 .credit(requirement.getCredit())
                 .type(requirement.getType())
+                .semester(requirement.getSemester())
                 .build();
     }
 
