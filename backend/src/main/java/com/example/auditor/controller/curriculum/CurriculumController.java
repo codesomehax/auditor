@@ -48,6 +48,12 @@ public class CurriculumController {
         return parseService.uploadCurriculum(id, file);
     }
 
+    @PostMapping(value = "/{id}/plan", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Curriculum addCurriculumPlan(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+
+        return parseService.addCurriculumPlan(id, file);
+    }
+
     @PostMapping("/{id}/manual")
     public Curriculum uploadManualRequirements(
             @PathVariable Long id,

@@ -5,6 +5,7 @@
     <td>{{requirement.credit}}</td>
     <td>{{requirement.patterns}}</td>
     <td>{{requirement.antipatterns}}</td>
+    <td>{{requirement.semester}}</td>
   </tr>
 </template>
 

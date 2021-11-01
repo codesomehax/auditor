@@ -14,6 +14,7 @@ public class RequirementDto {
     private Integer credit;
     private String patterns;
     private String antipatterns;
+    private Integer semester;
 
     public String getPatterns() {
 

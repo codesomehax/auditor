@@ -24,7 +24,7 @@ public class Requirement {
     private String patterns;
     private String antipatterns;
     private Integer credit;
-
+    private Integer semester;
     private String type;
 
 }

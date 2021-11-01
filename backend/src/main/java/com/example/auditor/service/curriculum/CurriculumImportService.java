@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,6 +110,100 @@ public class CurriculumImportService {
 
                 }
             }
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        curriculum.setRequirements(requirements);
+        return curriculumRepository.save(curriculum);
+    }
+
+    public Curriculum addCurriculumPlan(Long id, MultipartFile file) {
+
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course plan file must not be null or empty");
+        }
+
+        Curriculum curriculum = curriculumRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find curriculum with specified id"));
+
+        List<Requirement> requirements = curriculum.getRequirements();
+
+        try (XWPFDocument doc = new XWPFDocument(file.getInputStream())) {
+                List<XWPFTable> table = doc.getTables();
+
+                int year = 0;
+                boolean nextLineIsUseful = false;
+
+                XWPFTable xwpfTable = table.get(0);
+                    List<XWPFTableRow> row = xwpfTable.getRows();
+                    for (XWPFTableRow xwpfTableRow : row) {
+                        List<XWPFTableCell> cell = xwpfTableRow.getTableCells();
+                        List<String> fiveLines = new ArrayList<>();
+                        for (XWPFTableCell xwpfTableCell : cell) {
+                            if(xwpfTableCell!=null)
+                            {
+                                String line = xwpfTableCell.getText();
+
+                                if (line.startsWith("Total")) {
+                                    nextLineIsUseful = false;
+                                }
+                                else if (line.equals("Freshman") || line.equals("Sophomore") || line.equals("Junior") || line.equals("Senior")) {
+                                    nextLineIsUseful = true;
+                                    fiveLines.add(line);
+                                    year++;
+                                    continue;
+                                }
+                                if (nextLineIsUseful) {
+                                        fiveLines.add(line);
+                                }
+                            }
+                        }
+                        if (fiveLines.size() == 5) {
+                            String name1 = fiveLines.get(1);
+                            String name2 =  fiveLines.get(3);
+                            Integer semester1 = year * 2 - 1;
+                            Integer semester2 = year * 2;
+
+                            System.out.println(name1 + ' ' + semester1);
+                            System.out.println(name2 + ' ' + semester2);
+
+                            for (Requirement curReq : requirements) {
+
+                                if (name1.startsWith(curReq.getName())) {
+
+                                    Requirement requirement = requirementRepository.save(Requirement.builder()
+                                            .credit(curReq.getCredit())
+                                            .antipatterns(curReq.getAntipatterns())
+                                            .patterns(curReq.getPatterns())
+                                            .name(curReq.getName())
+                                            .type(curReq.getType())
+                                            .semester(semester1)
+                                            .build());
+                                    log.info("requirement: " + requirement);
+
+                                    requirements.set(requirements.indexOf(curReq), requirement);
+
+                                }
+                                else if (name2.startsWith(curReq.getName())) {
+
+                                    Requirement requirement = requirementRepository.save(Requirement.builder()
+                                            .credit(curReq.getCredit())
+                                            .antipatterns(curReq.getAntipatterns())
+                                            .patterns(curReq.getPatterns())
+                                            .name(curReq.getName())
+                                            .type(curReq.getType())
+                                            .semester(semester2)
+                                            .build());
+                                    log.info("requirement: " + requirement);
+
+                                    requirements.set(requirements.indexOf(curReq), requirement);
+
+                                }
+                            }
+                        }
+                    }
+
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
