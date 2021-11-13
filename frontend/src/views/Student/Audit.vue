@@ -149,6 +149,7 @@
           <th class="primary--text display-1">Credits</th>
           <th class="primary--text display-1">Grade Points</th>
           <th class="primary--text display-1">Letter Grade</th>
+<!--          <th class="primary&#45;&#45;text display-1">Semester</th>-->
         </tr>
         </thead>
 
@@ -185,7 +186,15 @@
           <td>
             {{ course.course.letterGrade }}
           </td>
+<!--          <td>-->
+<!--            {{ course.requirement.semester }}-->
+<!--          </td>-->
         </tr>
+<!--        <tr>-->
+<!--          <td></td>-->
+<!--          <td class="font-weight-bold">Total Credits</td>-->
+<!--          <td class="font-weight-bold">{{totalCredits}}</td>-->
+<!--        </tr>-->
         </tbody>
       </v-simple-table>
     </base-material-card>
@@ -206,6 +215,7 @@
               <th></th>
               <th class="primary--text display-1">Required Course</th>
               <th class="primary--text display-1">Credits</th>
+              <th class="primary--text display-1">Semester</th>
             </tr>
             </thead>
 
@@ -220,6 +230,9 @@
               </td>
               <td>
                 {{ req.credit }}
+              </td>
+              <td>
+                {{ req.semester }}
               </td>
             </tr>
             </tbody>
