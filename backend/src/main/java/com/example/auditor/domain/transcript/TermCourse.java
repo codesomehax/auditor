@@ -23,4 +23,8 @@ public class TermCourse {
     private Double gradePoint;
     private String letterGrade;
 
+    private Boolean satisfiesDegreeRequirement;
+    private Boolean affectsGPA;
+    private Boolean affectsCGPA;
+
 }

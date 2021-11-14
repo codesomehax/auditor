@@ -19,12 +19,20 @@ public class StudentTerm {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private String name;
+
+    /*private Integer creditsEnrolled;
+    private Integer creditsEarned;
+    private Integer creditsGraded;
+    private Integer creditsGradedCumulative;
+    private Integer creditsGradedCumulativeLocal;
+
+    private double gradePoints;
+    private double gradePointsCumulative;
+    private double gradePointsCumulativeLocal;*/
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<TermCourse> termCourses;
 
     private double termGpa;
-
 }
