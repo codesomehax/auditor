@@ -32,6 +32,14 @@ public class TranscriptService {
         String transcriptText = stripper.getText(document);
         TranscriptParser tParser = beanFactory.getBean(TranscriptParser.class, transcriptText);
         LinkedList<StudentTerm> studentTerms = tParser.getTerms();
+//        calculate current semester number
+        Integer currentSemester = 1;
+        for (StudentTerm term : studentTerms) {
+            if (term.getName().startsWith("Fall") || term.getName().startsWith("Spring")) {
+                currentSemester++;
+            }
+        }
+        System.out.println("current semester is: " + currentSemester);
         document.close();
         return studentRecordRepository.save(StudentRecord
                 .builder()
@@ -44,6 +52,7 @@ public class TranscriptService {
                 .major(tParser.getStudentMajor())
                 .admissionSemester(tParser.getAdmissionSemester())
                 .studentTerms(studentTerms)
+                .currentSemester(currentSemester)
                 .build()
         );
     }
