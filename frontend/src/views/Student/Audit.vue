@@ -132,6 +132,100 @@
         Create
       </v-btn>
     </v-row>
+
+<!--Provide a reminder tool that will, depending on the term of the student, display which classes should the student take to be on time.-->
+    <v-row>
+      <v-col
+          cols="12"
+          md="6"
+      >
+        <base-material-card
+            v-if="tableInfo.unmappedRequirements && tableInfo.unmappedRequirements.length > 0"
+            icon="mdi-bell-plus"
+            :title="'Should take in ' + currentSemesterString"
+            class="px-5 py-3"
+        >
+          <v-simple-table>
+            <thead>
+            <tr>
+              <th></th>
+              <th class="primary--text display-1">Course Name</th>
+              <th class="primary--text display-1">Credits</th>
+              <th class="primary--text display-1">Semester</th>
+            </tr>
+            </thead>
+            <tbody>
+            <template v-for="req in tableInfo.unmappedRequirements">
+            <!--            <template v-for="req in orderedUnmappedReq">-->
+<!--            <template v-for="req in currentSemesterReq">-->
+<!--                :key="req.id"-->
+<!--                @click.stop="allRowCheckbox(unmappedReq, req)">-->
+<!--              <td><input type="checkbox" :value=req v-model="unmappedReq"-->
+<!--                         :disabled="mappingReqDisabled"/></td>-->
+<!--              <tr :key="req.id">-->
+              <tr v-if="req.semester == student.currentSemester" :key="req.id">
+                <td></td>
+                <td>
+                  {{ req.name }}
+                </td>
+                <td>
+                  {{ req.credit }}
+                </td>
+                <td>
+                  {{ req.semester }}
+                </td>
+              </tr>
+            </template>
+            </tbody>
+          </v-simple-table>
+        </base-material-card>
+      </v-col>
+      <v-col
+          cols="12"
+          md="6"
+      >
+        <base-material-card
+            v-if="tableInfo.unmappedRequirements && tableInfo.unmappedRequirements.length > 0"
+            icon="mdi-bell-alert"
+            color="red"
+            :title="'Should have already taken before ' + currentSemesterString"
+            class="px-5 py-3"
+        >
+          <v-simple-table>
+            <thead>
+            <tr>
+              <th></th>
+              <th class="primary--text display-1">Course Name</th>
+              <th class="primary--text display-1">Credits</th>
+              <th class="primary--text display-1">Semester</th>
+            </tr>
+            </thead>
+            <tbody>
+<!--            <template v-for="req in orderedUnmappedReq">-->
+              <template v-for="req in tableInfo.unmappedRequirements">
+<!--                  :key="req.id"-->
+<!--                  @click.stop="allRowCheckbox(unmappedReq, req)">-->
+  <!--              <td><input type="checkbox" :value=req v-model="unmappedReq"-->
+  <!--                         :disabled="mappingReqDisabled"/></td>-->
+                <tr v-if="req.semester < student.currentSemester" :key="req.id">
+                  <td></td>
+                  <td>
+                    {{ req.name }}
+                  </td>
+                  <td>
+                    {{ req.credit }}
+                  </td>
+                  <td>
+                    {{ req.semester }}
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </v-simple-table>
+        </base-material-card>
+      </v-col>
+    </v-row>
+
     <base-material-card
         v-if="tableInfo.completeRequirements && tableInfo.completeRequirements.length > 0"
         icon="mdi-text-box-check"
@@ -220,6 +314,7 @@
             </thead>
 
             <tbody>
+<!--            <tr v-for="req in orderedUnmappedReq"-->
             <tr v-for="req in tableInfo.unmappedRequirements"
                 :key="req.id"
                 @click.stop="allRowCheckbox(unmappedReq, req)">
@@ -416,6 +511,8 @@
 
 <script>
 import {get, post, del} from '../../helpers/api'
+import _ from "lodash";
+// import debounce from 'lodash/debounce';
 
 export default {
   name: 'StudentAudit',
@@ -443,7 +540,26 @@ export default {
       showUploadFileDialog: false
     }
   },
-
+  computed: {
+    currentSemesterString: function() {
+      var s = this.student;
+      var admSem = s.admissionSemester;
+      var curSem = s.currentSemester;
+      var admSemYear = admSem.substr(admSem.length - 4);
+      var curSemYear = parseInt(admSemYear) + parseInt(curSem / 2);
+      return (curSem % 2 == 0) ? "Spring " : "Fall " + curSemYear;
+    },
+    // currentSemesterReq() {
+    //   return this.unmappedReq.filter(function(req) {
+    //     return req.semester === this.student.currentSemester;
+    //     // return true;
+    //   })
+    // },
+    orderedUnmappedReq: function() {
+      return _.orderBy(this.unmappedReq, 'semester')
+      // return _.sortBy(this.unmappedReq, 'semester')
+    }
+  },
   watch: {
     map2unmap(val) {
       this.allSelected = val.length === this.tableInfo.completeRequirements.length;
@@ -459,7 +575,7 @@ export default {
       this.unmappingDisabled = this.unmappedCourse.length > 0;
       this.mappingCourseDisabled = this.unmappedCourse.length > this.unmappedReq.length + 1;
       this.mappingReqDisabled = this.unmappedCourse.length + 1 < this.unmappedReq.length;
-    }
+    },
   },
 
   methods: {
