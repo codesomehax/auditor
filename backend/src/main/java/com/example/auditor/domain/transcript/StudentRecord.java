@@ -27,6 +27,7 @@ public class StudentRecord {
     private Float gpa;
     private Integer creditsEnrolled;
     private Integer creditsEarned;
+    private Integer currentSemester;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<StudentTerm> studentTerms;
