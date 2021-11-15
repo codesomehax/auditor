@@ -1,4 +1,4 @@
-package com.example.auditor.service.transcript.parser;
+package com.example.auditor.service.transcript.parser.LetterGrade;
 
 public class LiteralNotMatchedException extends Exception {
 

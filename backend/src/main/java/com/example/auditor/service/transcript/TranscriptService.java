@@ -31,30 +31,10 @@ public class TranscriptService {
         PDFTextStripper stripper = beanFactory.getBean(PDFTextStripper.class);
         String transcriptText = stripper.getText(document);
         TranscriptParser tParser = beanFactory.getBean(TranscriptParser.class, transcriptText);
-        LinkedList<StudentTerm> studentTerms = tParser.getTerms();
-//        calculate current semester number
-        Integer currentSemester = 1;
-        for (StudentTerm term : studentTerms) {
-            if (term.getName().startsWith("Fall") || term.getName().startsWith("Spring")) {
-                currentSemester++;
-            }
-        }
-        System.out.println("current semester is: " + currentSemester);
+
         document.close();
-        return studentRecordRepository.save(StudentRecord
-                .builder()
-                .id(tParser.getStudentId())
-                .name(tParser.getStudentName())
-                .creditsEarned(tParser.getOverallCreditsEarned())
-                .creditsEnrolled(tParser.getOverallCreditsEnrolled())
-                .gpa(tParser.getOverallGPA())
-                .schoolName(tParser.getSchoolName())
-                .major(tParser.getStudentMajor())
-                .admissionSemester(tParser.getAdmissionSemester())
-                .studentTerms(studentTerms)
-                .currentSemester(currentSemester)
-                .build()
-        );
+
+        return studentRecordRepository.save(tParser.buildStudentRecord());
     }
 
     public List<StudentRecord> getAll() {

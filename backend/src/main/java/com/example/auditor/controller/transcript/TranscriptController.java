@@ -26,7 +26,8 @@ public class TranscriptController {
     public StudentRecord createTranscript(@RequestParam("file") MultipartFile file) throws IOException {
         try {
             return transcriptService.createTranscript(file);
-        } catch (Exception x) {
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to parse the transcript");
         }

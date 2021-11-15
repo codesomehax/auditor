@@ -40,7 +40,7 @@ audit:
 #        gpa-regex: "(\\d\\.?\\d{1,2}|\\d|n\/a)\\s*$"
 #        credit-regex: "(\\d)"
 #        letter-grade: "(\\w{1,2}\\+?)"
-        credit-and-gpa: "(\\w{1,2}[+-]?)\\s+(\\d)\\s+(\\d\\.\\d{1,2}|\\d|n\\/a)\\s*$"
+        credit-and-gpa: "(\\w{1,2}[+-]?[*]{0,2})\\s+(\\d)\\s+(\\d\\.\\d{1,2}|\\d|n\\/a)\\s*$"
         gpa: "GPA:"
         cumulative: "Cumulative\\s*Cr:\\s*(\\d+)\\s*GPA:\\s*(\\d\\.\\d{1,2}|\\d)\\s*"
         prefix:

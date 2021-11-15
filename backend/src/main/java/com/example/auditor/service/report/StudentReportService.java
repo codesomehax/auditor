@@ -104,7 +104,7 @@ public class StudentReportService {
                 .builder()
                         .id(studentRecord.getId())
                         .curriculumId(curriculum.getId())
-                        .credits(studentRecord.getCreditsEarned())
+                        .credits(studentRecord.getCreditsEarnedTotal())
                         .completeRequirements(completeRequirements)
                         .unmappedRequirements(unmappedRequirements)
                         .unmappedCourses(unmappedCourses)
