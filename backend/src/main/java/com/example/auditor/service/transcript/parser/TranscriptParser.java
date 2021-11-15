@@ -1,13 +1,16 @@
 package com.example.auditor.service.transcript.parser;
 
+import com.example.auditor.domain.transcript.StudentRecord;
 import com.example.auditor.domain.transcript.TermCourse;
 import com.example.auditor.domain.transcript.StudentTerm;
+import com.example.auditor.service.transcript.parser.LetterGrade.*;
 import com.example.auditor.service.transcript.parser.util.IntermediateTerm;
 import com.example.auditor.service.transcript.parser.util.Pair;
+import com.sun.xml.bind.v2.runtime.output.SAXOutput;
+import io.swagger.v3.oas.models.links.Link;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -25,241 +28,304 @@ import java.util.regex.Pattern;
 @Scope(value = "prototype")
 public class TranscriptParser {
 
-@Value("${audit.parser.transcript.regex.course-code}")
-public String courseCode;
+    private final String text;
+    private final LinkedList<IntermediateTerm> intermediateTerms;
 
-@Value("${audit.parser.transcript.regex.credit-and-gpa}")
-public String creditAndGradePoint;
-
-@Value("${audit.parser.transcript.regex.prefix.student-name}")
-public String studentName;
-
-@Value("${audit.parser.transcript.regex.prefix.student-id}")
-public String studentId;
-
-@Value("${audit.parser.transcript.regex.prefix.school-name}")
-public String schoolName;
-
-@Value("${audit.parser.transcript.regex.prefix.student-major}")
-public String studentMajor;
-
-@Value("${audit.parser.transcript.regex.prefix.admission-semester}")
-public String admissionSemester;
-
-@Value("${audit.parser.transcript.regex.prefix.term}")
-public String term;
-
-@Value("${audit.parser.transcript.regex.prefix.overall}")
-public String overall;
-
-@Value("${audit.parser.transcript.regex.suffix.end-line}")
-public String endLine;
-
-@Value("${audit.parser.transcript.regex.suffix.program}")
-public String program;
-
-@Value("${audit.parser.transcript.regex.suffix.id}")
-public String id;
-
-@Value("${audit.parser.transcript.regex.gpa}")
-public String gpa;
-
-@Value("${audit.parser.transcript.regex.cumulative}")
-public String cumulative;
-
-private final String text;
-
-private final LinkedList<IntermediateTerm> intermediateTerms;
-
-private String cumulativeGPA;
-
-private String creditsEarned;
-
-
-
-public TranscriptParser(String text) {
-    this.text = text;
-    this.intermediateTerms = new LinkedList<>();
-}
-
-public void buildIntermediateTerms() {
-    Pattern p = Pattern.compile(term, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-    Matcher m = p.matcher(text);
-    while (m.find()) {
-      if (!intermediateTerms.isEmpty()) {
-        intermediateTerms.getLast().getCourseRegion().setSecond(m.start());
-      }
-      IntermediateTerm t = new IntermediateTerm(new Pair(m.start(), m.end()), new Pair(m.end(), text.length()));
-      intermediateTerms.add(t);
-    }
-}
-
-public LinkedList<StudentTerm> getTerms() {
-    buildIntermediateTerms();
-    buildOveralls();
-    LinkedList<StudentTerm> studentTerms = new LinkedList<>();
-    for (IntermediateTerm intermediateTerm : intermediateTerms) {
-        studentTerms.add(buildTerm(intermediateTerm));
-    }
-    return studentTerms;
-}
-
-private void buildOveralls() {
-    IntermediateTerm last = intermediateTerms.getLast();
-    Pair region = last.getCourseRegion();
-    Pattern p = Pattern.compile(cumulative);
-    Matcher m = p.matcher(text);
-    m.region(region.getFirst(), region.getSecond());
-    m.find();
-    this.creditsEarned = m.group(1);
-    this.cumulativeGPA = m.group(2);
-}
-
-public StudentTerm buildTerm(IntermediateTerm intermediateTerm) {
-    String termName = text.substring(
-        intermediateTerm.getPosition().getFirst(),
-        intermediateTerm.getPosition().getSecond()
-    ).strip();
-    termName = termName.replaceAll("[\\t\\n\\r]+"," "); // remove newlines
-    LinkedList<TermCourse> termCourses = buildCourses(intermediateTerm.getCourseRegion());
-    String textTermGpa = getTermGpa(intermediateTerm.getCourseRegion());
-    Double termGpa = Double.parseDouble(textTermGpa);
-
-
-    double slicedGpa = BigDecimal.valueOf(termGpa)
-        .setScale(2, RoundingMode.HALF_UP)
-        .doubleValue();
-
-    return new StudentTerm(null, termName, termCourses, slicedGpa);
-}
-
-public LinkedList<TermCourse> buildCourses(Pair courseRegion) {
-    Pattern p = Pattern.compile(courseCode, Pattern.MULTILINE);
-    Matcher m = p.matcher(text);
-    m.region(courseRegion.getFirst(), courseRegion.getSecond());
-    LinkedList<TermCourse> cours = new LinkedList<>();
-    while (m.find()) {
-      cours.add(buildCourse(m.start(), m.end()));
-    }
-    return cours;
-}
-
-public TermCourse buildCourse(int start, int end) {
-    String courseCode = text.substring(start, end);
-    Pattern p = Pattern.compile(creditAndGradePoint, Pattern.MULTILINE);
-    Matcher m = p.matcher(text);
-    m.region(end, text.length());
-    String credits = Strings.EMPTY;
-    String grade = Strings.EMPTY;
-    String courseLetterGradeLiteral = Strings.EMPTY;
-    if (m.find()) {
-        courseLetterGradeLiteral = m.group(1);
-        credits = m.group(2);
-        grade = m.group(3);
+    public TranscriptParser(String text) {
+        this.text = text;
+        this.intermediateTerms = new LinkedList<>();
     }
 
-    Integer courseCredits = credits.isEmpty() ? 0 : Integer.parseInt(credits);
-    Double courseGradePoint = 0d;
-    if(!grade.equals("n/a")) {
-      courseGradePoint = credits.isEmpty() ? 0f : Double.parseDouble(grade);
+    public StudentRecord buildStudentRecord() {
+
+        double gpa = 0d;
+        double gradePointsTotal = 0d;
+        Integer creditsEnrolledTotal = 0;
+        Integer creditsEarnedTotal = 0;
+        Integer creditsGradedTotal = 0;
+        Integer currentSemester = 1;
+
+        LinkedList<StudentTerm> studentTerms = buildStudentTerms();
+        for (StudentTerm studentTerm : studentTerms) {
+
+            gradePointsTotal += studentTerm.getGradePointsThisTerm();
+            creditsEnrolledTotal += studentTerm.getCreditsEnrolledThisTerm();
+            creditsEarnedTotal += studentTerm.getCreditsEarnedThisTerm();
+            creditsGradedTotal += studentTerm.getCreditsGradedThisTerm();
+
+            if (studentTerm.getName().startsWith("Fall") || studentTerm.getName().startsWith("Spring")) {
+                currentSemester++;
+            }
+        }
+
+        gpa = (double) studentTerms.getLast().getTermCumulativeGpa();
+
+        return StudentRecord.builder()
+                .id(getStudentId())
+                .name(getStudentName())
+                .schoolName(getSchoolName())
+                .major(getStudentMajor())
+                .admissionSemester(getAdmissionSemester())
+                .gpa(round(gpa))
+                .gradePointsTotal(gradePointsTotal)
+                .creditsEnrolledTotal(creditsEnrolledTotal)
+                .creditsEarnedTotal(creditsEarnedTotal)
+                .creditsGradedTotal(creditsGradedTotal)
+                .currentSemester(currentSemester)
+                .studentTerms(studentTerms)
+        .build();
+
     }
 
-    LetterGrade letterGrade = null;
 
-    try {
-        letterGrade = LetterGrade.match(courseLetterGradeLiteral);
+    private LinkedList<StudentTerm> buildStudentTerms() {
 
-    } catch (LiteralNotMatchedException e) {
+        LinkedList<StudentTerm> studentTerms = new LinkedList<>();
 
-        e.printStackTrace();
+
+        IntersemesterExchange intersemesterExchange = IntersemesterExchange.builder()
+                .creditsGradedTotal(0)
+                .gradePointsTotal(0d)
+                .retakenCourses(new LinkedList<TermCourse>())
+                .build();
+
+        buildIntermediateTerms();
+        for (IntermediateTerm intermediateTerm : intermediateTerms) {
+
+            studentTerms.add(
+                    buildStudentTerm(intermediateTerm, intersemesterExchange)
+            );
+        }
+
+        return studentTerms;
     }
 
-    return TermCourse.builder()
+
+    private StudentTerm buildStudentTerm (
+            IntermediateTerm intermediateTerm, IntersemesterExchange intersemesterExchange
+    ) {
+
+        String name = text.substring(
+                intermediateTerm.getPosition().getFirst(),
+                intermediateTerm.getPosition().getSecond()
+        ).strip();
+        name = name.replaceAll("[\\t\\n\\r]+"," ");
+
+        Integer creditsEnrolledThisTerm = 0;
+        Integer creditsEarnedThisTerm = 0;
+        Integer creditsGradedThisTerm = 0;
+        Integer creditsGradedCumulative = intersemesterExchange.getCreditsGradedTotal();
+        Integer creditsGradedTotal = intersemesterExchange.getCreditsGradedTotal();
+
+        double gradePointsThisTerm = 0d;
+        double gradePointsCumulative = intersemesterExchange.getGradePointsTotal();
+        double gradePointsTotal = intersemesterExchange.getGradePointsTotal();
+
+        LinkedList<TermCourse> retakenCourses = intersemesterExchange.getRetakenCourses();
+
+        LinkedList<TermCourse> termCourses = buildTermCourses(intermediateTerm.getCourseRegion());
+        for (TermCourse termCourse : termCourses) {
+
+            int courseCredits = termCourse.getCredits();
+            double courseGradePoint = termCourse.getGradePoint();
+            double courseGradePointWeighted = round(courseGradePoint * courseCredits );
+
+            creditsEnrolledThisTerm += courseCredits;
+
+            if (termCourse.getLetterGradeModifiedInstance().getSatisfiesDegreeRequirement()) {
+
+                creditsEarnedThisTerm += courseCredits;
+            }
+
+            if (termCourse.getLetterGradeModifiedInstance().getLetterGrade().getGroup().getAffectsSemesterGPA()) {
+
+                creditsGradedThisTerm += courseCredits;
+                creditsGradedCumulative += courseCredits;
+                gradePointsThisTerm += courseGradePointWeighted;
+                gradePointsCumulative += courseGradePointWeighted;
+            }
+
+            if (termCourse.getLetterGradeModifiedInstance().getLetterGrade().getGroup().getAffectsCGPA()) {
+
+                creditsGradedTotal += courseCredits;
+                gradePointsTotal += courseGradePointWeighted;
+
+            }
+
+             if (termCourse.getLetterGradeModifiedInstance().getLetterGradeModifier() == LetterGradeModifier.DOUBLESTAR) {
+
+                 retakenCourses.add(termCourse);
+
+             } else {
+
+                 LinkedList<TermCourse> cancelledRetakes = cancelRetakes(retakenCourses, termCourse);
+                 for (TermCourse cancelledRetake : cancelledRetakes) {
+
+                     System.out.println(cancelledRetake);
+                     int cancelledRetakeCredits = cancelledRetake.getCredits();
+                     double cancelledRetakeGradePoints = cancelledRetake.getGradePoint();
+
+                     creditsGradedCumulative -= cancelledRetakeCredits;
+                     creditsGradedTotal -= cancelledRetakeCredits;
+
+                     gradePointsCumulative -= cancelledRetakeGradePoints;
+                     gradePointsTotal -= cancelledRetakeGradePoints;
+                 }
+             }
+        }
+
+        intersemesterExchange.setCreditsGradedTotal(creditsGradedTotal);
+        intersemesterExchange.setGradePointsTotal(gradePointsTotal);
+        intersemesterExchange.setRetakenCourses(retakenCourses);
+
+
+        double termGpa = round( gradePointsThisTerm / creditsGradedThisTerm );
+        double termCumulativeGpa = round( gradePointsCumulative / creditsGradedCumulative );
+
+        return StudentTerm.builder()
+                    .id(null)
+                    .name(name)
+                    .creditsEnrolledThisTerm(creditsEnrolledThisTerm)
+                    .creditsEarnedThisTerm(creditsEarnedThisTerm)
+                    .creditsGradedThisTerm(creditsGradedThisTerm)
+                    .creditsGradedCumulative(creditsGradedCumulative)
+                    .creditsGradedTotal(creditsGradedTotal)
+                    .gradePointsThisTerm(gradePointsThisTerm)
+                    .gradePointsCumulative(gradePointsCumulative)
+                    .gradePointsTotal(gradePointsTotal)
+                    .termCourses(termCourses)
+                    .termGpa(termGpa)
+                    .termCumulativeGpa(termCumulativeGpa)
+                .build();
+    }
+
+
+    private LinkedList<TermCourse> cancelRetakes(LinkedList<TermCourse> retakenCourses, TermCourse termCourse) {
+
+        LinkedList<TermCourse> cancelledRetakes = new LinkedList<>();
+        for (TermCourse retakenCourse : retakenCourses) {
+
+            if (retakenCourse.getCode().equals(termCourse.getCode())) {
+
+                cancelledRetakes.add(retakenCourse);
+            }
+        }
+
+        retakenCourses.removeAll(cancelledRetakes);
+
+        return cancelledRetakes;
+    }
+
+
+    public TermCourse buildTermCourse(int start, int end) throws LiteralNotMatchedException {
+        String courseCode = text.substring(start, end);
+        Pattern p = Pattern.compile(TranscriptParserKeyword.CREDIT_AND_GRADE_POINT, Pattern.MULTILINE);
+        Matcher m = p.matcher(text);
+        m.region(end, text.length());
+        String credits = Strings.EMPTY;
+        String grade = Strings.EMPTY;
+        String courseLetterGradeLiteral = Strings.EMPTY;
+        if (m.find()) {
+            courseLetterGradeLiteral = m.group(1);
+            credits = m.group(2);
+            grade = m.group(3);
+        }
+
+        Integer courseCredits = credits.isEmpty() ? 0 : Integer.parseInt(credits);
+        Double courseGradePoint = 0d;
+        if(!grade.equals("n/a")) {
+            courseGradePoint = credits.isEmpty() ? 0f : Double.parseDouble(grade);
+        }
+
+        LetterGradeModifiedInstance letterGradeModifiedInstance = new LetterGradeModifiedInstance(courseLetterGradeLiteral);
+
+        return TermCourse.builder()
                 .id(null)
                 .code(courseCode)
                 .credits(courseCredits)
-                .gradePoint(letterGrade.getGradePoint())
-                .letterGrade(letterGrade.getLiteral())
-                .satisfiesDegreeRequirement(letterGrade.getLetterGradeGroup().getSatisfiesDegreeRequirement())
-                .affectsGPA(letterGrade.getLetterGradeGroup().getAffectsGPA())
-                .affectsCGPA(letterGrade.getLetterGradeGroup().getAffectsCGPA())
-            .build();
-}
+                .gradePoint(letterGradeModifiedInstance.getLetterGrade().getGradePoint())
+                .letterGradeModifiedInstance(letterGradeModifiedInstance)
+                .letterGradeLiteral(letterGradeModifiedInstance.getLetterGrade().getLiteral())
+        .build();
 
-private String getTermGpa(Pair region){
-    String regex = gpa + "\\s*(\\d\\.\\d{1,2}|\\d)";
-    Pattern p = Pattern.compile(regex);
-    Matcher m = p.matcher(text);
-    m.region(region.getFirst(), region.getSecond());
-    if(m.find()){
-      return m.group(1);
     }
-    return "0";
-}
 
-// method overloading is way better than optional argument shit!
-private String getBetweenPrefixAndSuffix(String prefix, String suffix) {
-    String focusTextCaptureGroup = "(.+?)"; // it has to be non greedy
-    String regex = prefix + focusTextCaptureGroup + suffix;
-    String result = "";
-    Pattern p =  Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-    Matcher m  = p.matcher(text);
-    if(m.find()){
-      result = m.group(1).trim();
-    }else{
-      result =  UUID.randomUUID().toString();
+
+    public LinkedList<TermCourse> buildTermCourses(Pair courseRegion) {
+        Pattern p = Pattern.compile(TranscriptParserKeyword.COURSE_CODE, Pattern.MULTILINE);
+        Matcher m = p.matcher(text);
+        m.region(courseRegion.getFirst(), courseRegion.getSecond());
+        LinkedList<TermCourse> courses = new LinkedList<>();
+        while (m.find()) {
+            try {
+                courses.add(buildTermCourse(m.start(), m.end()));
+            } catch (LiteralNotMatchedException e) {
+                e.printStackTrace();
+            }
+        }
+        return courses;
     }
-    return result;
-}
+
+    private void buildIntermediateTerms() {
+        Pattern p = Pattern.compile(TranscriptParserKeyword.TERM, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        Matcher m = p.matcher(text);
+        while (m.find()) {
+          if (!intermediateTerms.isEmpty()) {
+            intermediateTerms.getLast().getCourseRegion().setSecond(m.start());
+          }
+          IntermediateTerm t = new IntermediateTerm(new Pair(m.start(), m.end()), new Pair(m.end(), text.length()));
+          intermediateTerms.add(t);
+        }
+    }
 
 
-public String getStudentName() {
-return getBetweenPrefixAndSuffix(studentName, id);
-}
-
-public long getStudentId() {
-return Long.parseLong(getBetweenPrefixAndSuffix(studentId, endLine));
-}
-
-public String getSchoolName() {
-return getBetweenPrefixAndSuffix(schoolName, program);
-}
-
-public String getStudentMajor() {
-return getBetweenPrefixAndSuffix(studentMajor, endLine);
-}
-// to restore service
-public String getAdmissionSemester() {
-return getBetweenPrefixAndSuffix(admissionSemester, endLine);
-}
-
-public Float getOverallGPA(){
-return Float.parseFloat(cumulativeGPA);
-//    return 0f;
-}
+    private String getBetweenPrefixAndSuffix(String prefix, String suffix) {
+        String focusTextCaptureGroup = "(.+?)"; // it has to be non greedy
+        String regex = prefix + focusTextCaptureGroup + suffix;
+        String result = "";
+        Pattern p =  Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher m  = p.matcher(text);
+        if(m.find()){
+          result = m.group(1).trim();
+        }else{
+          result =  UUID.randomUUID().toString();
+        }
+        return result;
+    }
 
 
-public Integer getOverallCreditsEnrolled(){
-//    Matcher m = getOverallMatcher();
-//    if(m.find()){
-//      return Integer.parseInt(m.group(3));
-//    }
-return 0;
-}
+    public String getStudentName() {
 
-public Integer getOverallCreditsEarned(){
-return Integer.parseInt(creditsEarned);
-}
+        return getBetweenPrefixAndSuffix(TranscriptParserKeyword.STUDENT_NAME, TranscriptParserKeyword.ID);
+    }
+
+    public long getStudentId() {
+
+        return Long.parseLong(getBetweenPrefixAndSuffix(TranscriptParserKeyword.STUDENT_ID, TranscriptParserKeyword.ENDLINE));
+    }
+
+    public String getSchoolName() {
+
+        return getBetweenPrefixAndSuffix(TranscriptParserKeyword.SCHOOL_NAME, TranscriptParserKeyword.PROGRAM);
+    }
+
+    public String getStudentMajor() {
+
+        return getBetweenPrefixAndSuffix(TranscriptParserKeyword.STUDENT_MAJOR, TranscriptParserKeyword.ENDLINE);
+    }
+
+    public String getAdmissionSemester() {
+
+        return getBetweenPrefixAndSuffix(TranscriptParserKeyword.ADMISSION_SEMESTER, TranscriptParserKeyword.ENDLINE);
+    }
 
 
-private int getStartRegion(){
-Pattern p = Pattern.compile(overall, Pattern.MULTILINE);
-Matcher m = p.matcher(text);
-if(m.find()){
-  return m.end();
-}
-return 0;
-}
+    private double round(double d) {
+
+        return BigDecimal.valueOf(d)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
 }
 
 

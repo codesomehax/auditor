@@ -24,9 +24,14 @@ public class StudentRecord {
     private String schoolName;
     private String major;
     private String admissionSemester;
-    private Float gpa;
-    private Integer creditsEnrolled;
-    private Integer creditsEarned;
+
+    private Double gpa;
+    private Double gradePointsTotal;
+
+    private Integer creditsEnrolledTotal;
+    private Integer creditsEarnedTotal;
+    private Integer creditsGradedTotal;
+
     private Integer currentSemester;
 
     @OneToMany(cascade = CascadeType.ALL)

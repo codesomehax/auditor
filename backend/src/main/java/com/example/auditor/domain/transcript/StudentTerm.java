@@ -21,18 +21,19 @@ public class StudentTerm {
     private Long id;
     private String name;
 
-    /*private Integer creditsEnrolled;
-    private Integer creditsEarned;
-    private Integer creditsGraded;
+    private Integer creditsEnrolledThisTerm;
+    private Integer creditsEarnedThisTerm;
+    private Integer creditsGradedThisTerm;
     private Integer creditsGradedCumulative;
-    private Integer creditsGradedCumulativeLocal;
+    private Integer creditsGradedTotal;
 
-    private double gradePoints;
-    private double gradePointsCumulative;
-    private double gradePointsCumulativeLocal;*/
+    private Double gradePointsThisTerm;
+    private Double gradePointsCumulative;
+    private Double gradePointsTotal;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<TermCourse> termCourses;
 
-    private double termGpa;
+    private Double termGpa;
+    private Double termCumulativeGpa;
 }

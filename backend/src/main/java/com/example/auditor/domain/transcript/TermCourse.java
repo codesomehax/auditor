@@ -1,5 +1,7 @@
 package com.example.auditor.domain.transcript;
 
+
+import com.example.auditor.service.transcript.parser.LetterGrade.LetterGradeModifiedInstance;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,10 +23,10 @@ public class TermCourse {
     private String code;
     private Integer credits;
     private Double gradePoint;
-    private String letterGrade;
+    private String letterGradeLiteral;
 
-    private Boolean satisfiesDegreeRequirement;
-    private Boolean affectsGPA;
-    private Boolean affectsCGPA;
+    @Transient
+    private LetterGradeModifiedInstance letterGradeModifiedInstance;
+
 
 }
