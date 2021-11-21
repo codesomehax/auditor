@@ -161,7 +161,6 @@ public class TranscriptParser {
                  LinkedList<TermCourse> cancelledRetakes = cancelRetakes(retakenCourses, termCourse);
                  for (TermCourse cancelledRetake : cancelledRetakes) {
 
-                     System.out.println(cancelledRetake);
                      int cancelledRetakeCredits = cancelledRetake.getCredits();
                      double cancelledRetakeGradePoints = cancelledRetake.getGradePoint();
 
@@ -246,6 +245,7 @@ public class TranscriptParser {
                 .gradePoint(letterGradeModifiedInstance.getLetterGrade().getGradePoint())
                 .letterGradeModifiedInstance(letterGradeModifiedInstance)
                 .letterGradeLiteral(letterGradeModifiedInstance.getLetterGrade().getLiteral())
+                .letterGradeModifierLiteral(letterGradeModifiedInstance.getLetterGradeModifier().getLiteral())
         .build();
 
     }

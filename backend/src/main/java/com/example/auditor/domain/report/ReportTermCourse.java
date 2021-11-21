@@ -31,7 +31,7 @@ public class ReportTermCourse {
                 .code(termCourse.getCode())
                 .credits(termCourse.getCredits())
                 .gradePoint(termCourse.getGradePoint())
-                .letterGrade(termCourse.getLetterGradeModifiedInstance().getLetterGrade().getLiteral())
+                .letterGrade(termCourse.getLetterGradeLiteral())
                 .build();
     }
 

@@ -20,10 +20,12 @@
       <v-col cols="6" md="2">
         <v-btn
             color="success"
-            text
             @click="showUploadFileDialog=true"
         >
           Update transcript
+          <v-icon>
+            mdi-account-reactivate
+          </v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -75,11 +77,11 @@
               </tr>
               <tr>
                 <td>Credits Enrolled</td>
-                <td>{{ student.creditsEnrolled }}</td>
+                <td>{{ student.creditsEnrolledTotal }}</td>
               </tr>
               <tr>
                 <td>Credits Earned</td>
-                <td>{{ student.creditsEarned }}</td>
+                <td>{{ student.creditsEarnedTotal }}</td>
               </tr>
               </tbody>
             </v-simple-table>
@@ -598,7 +600,7 @@ export default {
             'Content-Type': 'multipart/form-data'
           });
         }
-        this.addFiles = false;
+        this.showUploadFileDialog = false;
         this.files = [];
       } else {
         console.log("There are no files.");

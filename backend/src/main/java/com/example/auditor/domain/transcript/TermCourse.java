@@ -2,6 +2,7 @@ package com.example.auditor.domain.transcript;
 
 
 import com.example.auditor.service.transcript.parser.LetterGrade.LetterGradeModifiedInstance;
+import com.example.auditor.service.transcript.parser.LetterGrade.LiteralNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +25,16 @@ public class TermCourse {
     private Integer credits;
     private Double gradePoint;
     private String letterGradeLiteral;
+    private String letterGradeModifierLiteral;
 
     @Transient
     private LetterGradeModifiedInstance letterGradeModifiedInstance;
 
+
+    @PostLoad
+    private void postLoad() throws LiteralNotMatchedException {
+
+        letterGradeModifiedInstance = new LetterGradeModifiedInstance(letterGradeLiteral + letterGradeModifierLiteral);
+    }
 
 }
