@@ -65,7 +65,8 @@ public class StudentReportService {
         List<ReportTermCourse> completedCourses = studentRecord
                 .getStudentTerms()
                 .stream()
-                .flatMap(x -> x.getTermCourses().stream())
+                .flatMap(studentTerm -> studentTerm.getTermCourses().stream())
+                .filter(termCourse -> termCourse.getLetterGradeModifiedInstance().getSatisfiesDegreeRequirement())
                 .sorted(Comparator.comparingInt(TermCourse::getCredits))
                 .map(termCourse -> ReportTermCourse.fromTranscriptTermCourse(termCourse))
                 .collect(Collectors.toList());

@@ -22,7 +22,7 @@ public class LetterGradeModifiedInstance {
 
         affectsSemesterGPA = letterGrade.getGroup().getAffectsSemesterGPA() && letterGradeModifier.getAffectsSemesterGPA();
         affectsCGPA = letterGrade.getGroup().getAffectsCGPA() && letterGradeModifier.getAffectsCGPA();
-        satisfiesDegreeRequirement = letterGrade.getGroup().getSatisfiesDegreeRequirement() == letterGradeModifier.getSatisfiesDegreeRequirement();
+        satisfiesDegreeRequirement = letterGrade.getGroup().getSatisfiesDegreeRequirement() && letterGradeModifier.getSatisfiesDegreeRequirement();
 
     }
 
