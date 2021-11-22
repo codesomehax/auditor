@@ -26,7 +26,8 @@ public enum LetterGrade {
     UD(0.0, "UD", LetterGradeGroup.W_UD),
     
     SD(0.0, "SD", LetterGradeGroup.SD_P),
-    P(0.0, "P", LetterGradeGroup.SD_P);
+    P(0.0, "P", LetterGradeGroup.SD_P),
+    NONE(0.0, "NONE", LetterGradeGroup.W_UD);
 
     private Double gradePoint;
     private String literal;
