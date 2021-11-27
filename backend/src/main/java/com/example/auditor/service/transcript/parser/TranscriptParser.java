@@ -178,8 +178,8 @@ public class TranscriptParser {
         intersemesterExchange.setRetakenCourses(retakenCourses);
 
 
-        double termGpa = round( gradePointsThisTerm / creditsGradedThisTerm );
-        double termCumulativeGpa = round( gradePointsCumulative / creditsGradedCumulative );
+        double termGpa = calculateGPA(gradePointsThisTerm, creditsGradedThisTerm);
+        double termCumulativeGpa = calculateGPA(gradePointsCumulative, creditsGradedCumulative);
 
         return StudentTerm.builder()
                     .id(null)
@@ -198,6 +198,18 @@ public class TranscriptParser {
                 .build();
     }
 
+
+    private double calculateGPA(double gradePoints, int creditsGraded) {
+
+        double GPA = 0d;
+
+        if (creditsGraded != 0) {
+
+            GPA = round(gradePoints / creditsGraded);
+        }
+
+        return GPA;
+    }
 
     private LinkedList<TermCourse> cancelRetakes(LinkedList<TermCourse> retakenCourses, TermCourse termCourse) {
 
@@ -322,9 +334,19 @@ public class TranscriptParser {
 
     private double round(double d) {
 
-        return BigDecimal.valueOf(d)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
+        double retval = 0.0;
+        try {
+            retval = BigDecimal.valueOf(d)
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .doubleValue();
+        } catch (NumberFormatException e) {
+
+            e.printStackTrace();
+        }
+
+        return retval;
+
+
     }
 }
 
