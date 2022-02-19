@@ -24,7 +24,7 @@
         * Example: The pattern "MAT" is equivalent to "MAT? ???".
     * Parser also supports ranges of course codes. In the numerical part of a pattern specify lower and upper bounds separated by the hyphen.
         * Example: MATH 161-163 matches three courses with codes in the set {MATH 161, MATH 162, MATH 163}.
-    *  A set of separated by comma patterns can be provided for a single requirement. In this case, the requirement is satisfied by any course matching at least of the patterns.
+    *  A set of separated by comma patterns can be provided for a single requirement. In this case, the requirement is satisfied by any course matching at least one of the patterns.
         * Example: MATH 161, MATH 162, MATH 163 is equivalent to MATH 161-163
     
 * The fourth column specifies antipatterns of a requirement
