@@ -362,7 +362,8 @@
                 :key="course"
                 @click.stop="allRowCheckbox(unmappedCourse, course)">
               <td><input type="checkbox" :value=course v-model="unmappedCourse"
-                         :disabled="mappingCourseDisabled"/></td>
+                         :disabled="mappingCourseDisabled"/>
+              </td>
               <td>
                 {{ course.code }}
               </td>
@@ -381,6 +382,48 @@
         </base-material-card>
       </v-col>
     </v-row>
+
+    <v-row>
+      <v-col
+        cols="12"
+        md="6"
+      >
+        <base-material-card
+            v-if="tableInfo.failedCourses && tableInfo.failedCourses.length > 0"
+            icon="mdi-text-box-plus"
+            title="Failed courses"
+            class="px-5 py-3"
+        >
+          <v-simple-table>
+            <thead>
+              <tr>
+                <th class="primary--text display-1">Taken course</th>
+                <th class="primary--text display-1">Credits</th>
+                <th class="primary--text display-1">Letter grade</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr v-for="course in tableInfo.failedCourses"
+                  :key="course"
+                  @click.stop="allRowCheckbox(unmappedCourse, course)">
+                <td>
+                  {{ course.code }}
+                </td>
+                <td>
+                  {{ course.credits }}
+                </td>
+                <td>
+                  {{ course.letterGrade }}
+                </td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </base-material-card>
+
+      </v-col>
+    </v-row>
+
     <v-row class="text-right">
       <v-spacer></v-spacer>
       <v-col cols="3" md="2">

@@ -32,4 +32,6 @@ public class StudentReport {
     @OneToMany(cascade = CascadeType.ALL)
     private List<ReportTermCourse> unmappedCourses;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<ReportTermCourse> failedCourses;
 }

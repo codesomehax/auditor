@@ -72,10 +72,23 @@ public class StudentReportService {
                 .collect(Collectors.toList());
 
 
+        List<ReportTermCourse> failedCourses = studentRecord
+                .getStudentTerms()
+                .stream()
+                .flatMap(studentTerm -> studentTerm.getTermCourses().stream())
+                .filter(termCourse -> !termCourse.getLetterGradeModifiedInstance().getSatisfiesDegreeRequirement())
+                .sorted(Comparator.comparingInt(TermCourse::getCredits))
+                .map(termCourse -> ReportTermCourse.fromTranscriptTermCourse(termCourse))
+                .collect(Collectors.toList());
+
+        System.out.println(failedCourses);
+
         List<ReportTermCourse> unmappedCourses = completedCourses;
         List<ReportRequirement> unmappedRequirements = requirements;
         List<ReportRequirementWithCourse> completeRequirements = new ArrayList<>();
         List<ReportTermCourse> mappedCourses = new ArrayList<>();
+
+
 
         for (ReportTermCourse completedCourse : completedCourses) {
 
@@ -109,6 +122,7 @@ public class StudentReportService {
                         .completeRequirements(completeRequirements)
                         .unmappedRequirements(unmappedRequirements)
                         .unmappedCourses(unmappedCourses)
+                        .failedCourses(failedCourses)
                 .build()
         );
 
