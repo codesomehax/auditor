@@ -50,6 +50,12 @@ export default new Router({
           component: () => import('@/views/Student/Comparison'),
         },
         {
+          name: 'Compare Students Performance',
+          path: '/students-performance-comparison/',
+          props: route => ({ ids: route.query.ids }),
+          component: () => import('@/views/Student/PerformanceComparison'),
+        },
+        {
           name: 'Template mails',
           path: '/mails-list',
           component: () => import('@/views/Mail/List'),
