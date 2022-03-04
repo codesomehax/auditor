@@ -46,6 +46,9 @@
                   <div class="text--primary">
                     <span class="font-weight-light">Unmet degree requirements:</span> {{reports[index].unmappedRequirements.length}}
                   </div>
+                  <router-link :to="'/student/' + student.id">
+                    Details
+                  </router-link>
                 </v-card-text>
               </base-material-card>
             </v-col>
