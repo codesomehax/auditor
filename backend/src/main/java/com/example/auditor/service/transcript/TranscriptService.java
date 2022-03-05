@@ -69,6 +69,7 @@ public class TranscriptService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+
         if (records.isEmpty()) {
             return Map.of();
         }

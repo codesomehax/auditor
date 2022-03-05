@@ -56,7 +56,7 @@
                   type="Line"
               >
                 <div ref="legend" class="card-title font-weight-light mt-2 ml-2">
-                  Comparison
+                  Legend
                 </div>
               </base-material-chart-card>
             </v-col>
@@ -100,7 +100,7 @@
                           flipTitle: true
                       }
                   }),
-                  this.$chartist.plugins.legend({className: "legend", position: this.$refs.legend})
+                  this.$chartist.plugins.legend()
               ]
             }
           }
@@ -137,6 +137,7 @@
           }
         });
       }
+
     },
     computed: {
       // chartData(){

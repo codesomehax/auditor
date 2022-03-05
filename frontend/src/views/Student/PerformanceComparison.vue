@@ -70,7 +70,8 @@ export default {
     return {
 
       students: [],
-      reports: []
+      reports: [],
+      panel: [0]
     }
   },
 
