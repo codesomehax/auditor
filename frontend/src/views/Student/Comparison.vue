@@ -56,7 +56,7 @@
                   type="Line"
               >
                 <div ref="legend" class="card-title font-weight-light mt-2 ml-2">
-                  Comparison
+                  Legend
                 </div>
               </base-material-chart-card>
             </v-col>
@@ -100,21 +100,22 @@
                           flipTitle: true
                       }
                   }),
-                  this.$chartist.plugins.legend({className: "legend", position: this.$refs.legend})
+                  this.$chartist.plugins.legend()
               ]
             }
           }
     },
 
     methods: {
-      getStudents(){
+      getStudents() {
           let _this = this;
+          console.log('/transcript/students/'+_this.id);
           get(_this, '/transcript/students/'+_this.id, {}, response=>{
               _this.students = response.data;
               _this.getGraph();
           });
       },
-      getGraph(){
+      getGraph() {
         let _this = this;
         get(_this, '/transcript/studentsGraph/'+_this.id, {}, response=>{
           _this.data.labels = response.data.terms;
@@ -136,6 +137,7 @@
           }
         });
       }
+
     },
     computed: {
       // chartData(){

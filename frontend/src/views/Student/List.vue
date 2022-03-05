@@ -106,6 +106,15 @@
       </v-col>
       <v-spacer/>
       <v-col
+          cols="1">
+        <router-link v-if="selectedStudents.length>1"
+                     :to="{ name: 'Compare Students Performance', query: { ids: selectedStudents } }" >
+          <v-btn  color="failure">
+            Compare
+          </v-btn>
+        </router-link>
+      </v-col>
+      <v-col
         cols="1">
         <router-link v-if="selectedStudents.length>1"
           :to="{ name: 'Compare Students', query: { id: selectedStudents } }" >

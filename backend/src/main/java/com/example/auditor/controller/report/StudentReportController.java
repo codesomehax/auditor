@@ -5,10 +5,12 @@ import com.example.auditor.dto.StudentReportDto;
 import com.example.auditor.service.report.StudentReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLOutput;
 import java.util.Map;
 
 @RestController
@@ -31,6 +33,16 @@ public class StudentReportController {
                 "data", report.isPresent(),
                 "content", report.orElse(new StudentReport())
         );
+    }
+
+    @GetMapping("batch/{ids}")
+    public ResponseEntity<?> getByIDs(@PathVariable Long[] ids) {
+
+        if (ids == null || ids.length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student ids param." +
+                    " Use 'report/batch/id1,id2,id3'");
+        }
+        return ResponseEntity.ok(reportService.getByIds(ids));
     }
 
     @PostMapping("{reportId}/detachCourses")

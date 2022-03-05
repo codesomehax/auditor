@@ -4,7 +4,8 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 export default new Router({
-  mode: 'hash',
+ //  mode: 'hash',
+    mode: 'history',
   base: process.env.BASE_URL,
   routes: [
     {
@@ -48,6 +49,12 @@ export default new Router({
           path: '/students-comparison/',
           props: route => ({ id: route.query.id }),
           component: () => import('@/views/Student/Comparison'),
+        },
+        {
+          name: 'Compare Students Performance',
+          path: '/students-performance-comparison/',
+          props: route => ({ ids: route.query.ids }),
+          component: () => import('@/views/Student/PerformanceComparison'),
         },
         {
           name: 'Template mails',

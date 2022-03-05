@@ -247,6 +247,15 @@ public class StudentReportService {
         return reportRepository.findById(id);
     }
 
+    public List<StudentReport> getByIds(Long[] ids) {
+
+        return Arrays.stream(ids)
+                .map(reportRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
     public void mapRequirement(Long reportId, Long courseId, Long requirementId) {
         var reportOpt = reportRepository.findById(reportId);
         if (reportOpt.isEmpty()) {
@@ -346,5 +355,4 @@ public class StudentReportService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid report id");
         }
     }
-
 }
