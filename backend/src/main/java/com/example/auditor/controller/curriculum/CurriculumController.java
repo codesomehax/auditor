@@ -33,7 +33,6 @@ public class CurriculumController {
     @PostMapping
     public Curriculum createCurriculum(@Validated(CurriculumDto.Create.class) @RequestBody CurriculumDto body) {
 
-        System.out.println(body);
         return curriculumService.createCurriculum(body);
     }
 

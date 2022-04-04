@@ -1,6 +1,7 @@
 package com.example.auditor.controller.report;
 
 import com.example.auditor.domain.report.StudentReport;
+import com.example.auditor.domain.transcript.StudentRecord;
 import com.example.auditor.dto.StudentReportDto;
 import com.example.auditor.service.report.StudentReportService;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +28,9 @@ public class StudentReportController {
     }
 
     @GetMapping("{id}")
-    public Map<Object, Object> getByID(@PathVariable Long id) {
-        var report = reportService.getById(id);
-        return Map.of(
-                "data", report.isPresent(),
-                "content", report.orElse(new StudentReport())
-        );
+    public StudentReport getByID(@PathVariable Long id) {
+
+        return reportService.getById(id);
     }
 
     @GetMapping("batch/{ids}")

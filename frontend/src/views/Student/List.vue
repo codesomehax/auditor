@@ -106,14 +106,32 @@
       </v-col>
       <v-spacer/>
       <v-col
+          v-if="selectedStudents.length>1"
           cols="1">
-        <router-link v-if="selectedStudents.length>1"
-                     :to="{ name: 'Compare Students Performance', query: { ids: selectedStudents } }" >
+        <v-select v-model="selectedCurriculum"
+                  :items="curriculums"
+                  item-value="id"
+                  prepend-icon="mdi-format-align-justify"
+                  menu-props="auto"
+                  hide-details
+                  label="Select a curriculum to build a report"
+                  single-line
+        >
+          <template slot="selection" slot-scope="data">
+            {{ data.item.major }} {{ data.item.year }}
+          </template>
+          <template slot="item" slot-scope="data">
+            {{ data.item.major }} {{ data.item.year }}
+          </template>
+        </v-select>
+        <router-link
+                     :to="{ name: 'Compare Students Performance', query: { ids: selectedStudents, curriculum: selectedCurriculum } }" >
           <v-btn  color="failure">
             Compare
           </v-btn>
         </router-link>
       </v-col>
+      <v-spacer/>
       <v-col
         cols="1">
         <router-link v-if="selectedStudents.length>1"
@@ -282,6 +300,8 @@
 import { get, post, del } from '../../helpers/api'
 export default {
   data: () => ({
+    selectedCurriculum: "",
+    curriculums: [],
     currentSort: 'Name',
     currentSortDir: 1,
     pageSize: 10,
@@ -332,6 +352,11 @@ export default {
 
   methods: {
     // get information
+    getCurriculums() {
+      get(this, '/curriculum', '', response => {
+        this.curriculums = response.data;
+      })
+    },
     getStudents() {
       get(this, '/transcript/all', '', response=>{
         this.students = response.data;
@@ -448,6 +473,7 @@ export default {
   },
 
   created() {
+    this.getCurriculums();
     this.getStudents();
     this.getMails();
     this.next = ((this.currentPage*this.pageSize) < this.students.length) ? true : false;

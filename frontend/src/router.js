@@ -53,7 +53,7 @@ export default new Router({
         {
           name: 'Compare Students Performance',
           path: '/students-performance-comparison/',
-          props: route => ({ ids: route.query.ids }),
+          props: route => ({ ids: route.query.ids, curriculum: route.query.curriculum }),
           component: () => import('@/views/Student/PerformanceComparison'),
         },
         {

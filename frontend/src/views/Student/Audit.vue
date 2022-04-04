@@ -688,9 +688,7 @@ export default {
     },
     getReport() {
       get(this, '/report/' + this.$route.params.id, '', response => {
-        if (response.data.data === true) {
-          this.tableInfo = response.data.content;
-        }
+        this.tableInfo = response.data;
       });
     },
     buildReport() {

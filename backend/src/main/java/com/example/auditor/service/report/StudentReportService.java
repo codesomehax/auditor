@@ -243,16 +243,15 @@ public class StudentReportService {
     }
 
 
-    public Optional<StudentReport> getById(Long id) {
-        return reportRepository.findById(id);
+    public StudentReport getById(Long id) {
+
+        return reportRepository.findById(id).orElse(new StudentReport());
     }
 
     public List<StudentReport> getByIds(Long[] ids) {
 
         return Arrays.stream(ids)
-                .map(reportRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(id -> getById(id))
                 .collect(Collectors.toList());
     }
 

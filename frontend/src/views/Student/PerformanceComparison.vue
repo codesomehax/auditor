@@ -60,11 +60,14 @@
 </template>
 
 <script>
-import {get} from "@/helpers/api";
+import {get, post} from "@/helpers/api";
 
 export default {
   name: "ProblemComparison",
-  props: ['ids'],
+  props: [
+      'ids',
+      'curriculum'
+  ],
 
   data() {
     return {
@@ -84,21 +87,36 @@ export default {
       });
     },
 
-    getReports() {
-      get(this, '/report/batch/'+ this.ids, {}, response=> {
+    buildReports() {
 
-        this.reports = response.data;
-      });
+      for (let id of this.ids) {
+
+        let data = {
+          curriculumId: this.curriculum,
+          studentId: id
+        }
+
+        post(this, '/report', data, response => {
 
 
-    }
+          let report = response.data;
+          this.reports.push(report);
+
+          this.$store.dispatch('setSnackbar', {text: "Success"})
+        }, error => {
+          this.$store.dispatch('setSnackbar', {text: error, color: "error"});
+        });
+
+      }
+    },
 
   },
 
   created() {
 
+    console.log(this.ids);
     this.getTranscripts();
-    this.getReports();
+    this.buildReports();
   }
 }
 </script>

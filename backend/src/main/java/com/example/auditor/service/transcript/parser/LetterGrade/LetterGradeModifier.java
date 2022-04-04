@@ -9,7 +9,7 @@ public enum LetterGradeModifier {
 
     NONE(true, true, true, ""),
     SINGLESTAR(false, false, false, "*"),
-    DOUBLESTAR(true, false, true, "**");
+    DOUBLESTAR(true, false, false, "**");
 
     private Boolean affectsSemesterGPA;
     private Boolean affectsCGPA;
