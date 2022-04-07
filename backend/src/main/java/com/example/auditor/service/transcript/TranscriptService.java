@@ -109,6 +109,10 @@ public class TranscriptService {
                 .stream()
                 .map(StudentRecord::getId)
                 .collect(Collectors.toList());
+        var studentNames = records
+                .stream()
+                .map(StudentRecord::getName)
+                .collect(Collectors.toList());
         var studentToTerm = records
                 .stream()
                 .collect(
@@ -126,6 +130,7 @@ public class TranscriptService {
         resultMap.put("terms", terms);
         resultMap.put("graph", studentToTerm);
         resultMap.put("students", students);
+        resultMap.put("studentNames", studentNames);
         resultMap.put("studentTerms", studentTerms);
 
         return resultMap;

@@ -55,6 +55,26 @@
           </v-row>
         </v-expansion-panel-content>
       </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header><span class="text-h4">Comparison</span></v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-row>
+            <v-col>
+              <base-material-chart-card
+                  elevation="0"
+                  :data="data"
+                  :options="chartOptions"
+                  color="success"
+                  type="Line"
+              >
+                <div ref="legend" class="card-title font-weight-light mt-2 ml-2">
+                  Legend
+                </div>
+              </base-material-chart-card>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
     </v-expansion-panels>
   </v-container>
 </template>
@@ -71,10 +91,37 @@ export default {
 
   data() {
     return {
-
+      data: {
+        labels: [],
+        series: []
+      },
       students: [],
       reports: [],
-      panel: [0]
+      // panel: [0]
+      panel: [0, 1],
+      chartOptions: {
+        high: 4,
+        low: 0,
+        lineSmooth: this.$chartist.Interpolation.none({
+          fillHoles: false
+        }),
+        plugins: [
+          this.$chartist.plugins.tooltip({ anchorToPoint: true }),
+          this.$chartist.plugins.ctAxisTitle({
+            axisY: {
+              axisTitle: 'GPA',
+              axisClass: 'gpa-axis-title',
+              textAnchor: 'middle',
+              offset: {
+                x: 0,
+                y: 20
+              },
+              flipTitle: true
+            }
+          }),
+          this.$chartist.plugins.legend()
+        ]
+      }
     }
   },
 
@@ -110,6 +157,43 @@ export default {
       }
     },
 
+    getStudents() {
+      let _this = this;
+      console.log('/transcript/students/'+_this.ids);
+      get(_this, '/transcript/students/'+_this.ids, {}, response=>{
+        _this.students = response.data;
+        _this.getGraph();
+      });
+    },
+    getGraph() {
+      let _this = this;
+      get(_this, '/transcript/studentsGraph/'+_this.ids, {}, response=>{
+        _this.data.labels = response.data.terms;
+        _this.data.series = [];
+        for (let id in response.data.graph){
+          let student = response.data.graph[id];
+          let name = "";
+          this.students.forEach(student => {
+            console.log(student.id + " == " + id);
+            if (student.id == id)
+              name = student.name;
+          });
+          let student_series = {name: name, data: []};
+          response.data.terms.forEach(term => {
+
+            let i = student.find(semester => {return semester["termName"] == term});
+
+            if (i){
+              student_series.data.push({x: i.termName, y: i.termGpa});
+            }else{
+              student_series.data.push({x: term, y: null})
+            }
+          });
+          _this.data.series.push(student_series);
+        }
+      });
+    }
+
   },
 
   created() {
@@ -117,6 +201,8 @@ export default {
     console.log(this.ids);
     this.getTranscripts();
     this.buildReports();
+    this.getStudents();
+    this.getGraph();
   }
 }
 </script>
