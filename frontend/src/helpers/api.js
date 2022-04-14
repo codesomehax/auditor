@@ -1,5 +1,14 @@
 import axios from 'axios'
-axios.defaults.baseURL = 'http://localhost:8080/';
+
+let mode = 'heroku';
+
+if (mode == 'localhost') {
+    axios.defaults.baseURL = 'http://localhost:8080/';
+}
+else if (mode == 'heroku') {
+    axios.defaults.baseURL;
+}
+
 import qs from 'qs'
 
 export function post(_this, url, payload, successCallback, errorCallback, headers = '') {
