@@ -124,6 +124,11 @@
           title: 'Template mails',
           to: '/mails-list',
           group: 'mail'
+        },
+        {
+          icon: 'mdi-help-circle',
+          title: 'Manuals',
+          to: '/manuals-list'
         }
       ],
     }),

@@ -66,6 +66,21 @@ export default new Router({
           path: '/modify-mail',
           props: route => ({ action: route.query.action, id: route.query.id }),
           component: () => import('@/views/Mail/Modify')
+        },
+        {
+          name: 'Manuals list',
+          path: 'manuals-list',
+          component: () => import('@/views/manuals/List')
+        },
+        {
+          name: 'Curriculum manual',
+          path: 'manual-curriculum',
+          component: () => import('@/views/manuals/Curriculum')
+        },
+        {
+          name: 'Student manual',
+          path: 'manual-student',
+          component: () => import('@/views/manuals/Student')
         }
       ],
     },
