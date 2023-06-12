@@ -1,33 +1,38 @@
 <template>
-    <v-app>
-        <dashboard-core-app-bar />
+  <v-app>
+    <dashboard-core-app-bar v-if="this.$route.path !== '/login'" />
+    <dashboard-core-drawer v-if="this.$route.path !== '/login'" />
+    <dashboard-core-view />
 
-        <dashboard-core-drawer />
+    <v-snackbar
+      v-for="(snackbar, index) in snackbars"
+      :key="index"
+      :color="snackbar.color"
+      v-model="snackbar.showing"
+      right
+      bottom
+    >{{ snackbar.text }}</v-snackbar>
 
-        <dashboard-core-view />
-
-        <v-snackbar v-for="(snackbar, index) in snackbars" :key="index" :color="snackbar.color" v-model="snackbar.showing" right bottom>{{snackbar.text}}</v-snackbar>
-
-    </v-app>
+  </v-app>
 </template>
 
 <script>
-  import {mapState} from "vuex";
+import { mapState } from "vuex"
 
-  export default {
-    name: 'DashboardIndex',
+export default {
+  name: 'DashboardIndex',
 
-    components: {
-      DashboardCoreAppBar: () => import('./components/core/AppBar'),
-      DashboardCoreDrawer: () => import('./components/core/Drawer'),
-      DashboardCoreView: () => import('./components/core/View'),
-    },
+  components: {
+    DashboardCoreAppBar: () => import('./components/core/AppBar'),
+    DashboardCoreDrawer: () => import('./components/core/Drawer'),
+    DashboardCoreView: () => import('./components/core/View'),
+  },
 
-    data: () => ({
-      expandOnHover: false,
-    }),
-    computed: {
-      ...mapState(['snackbars'])
-    }
+  data: () => ({
+    expandOnHover: false,
+  }),
+  computed: {
+    ...mapState(['snackbars'])
   }
+}
 </script>
