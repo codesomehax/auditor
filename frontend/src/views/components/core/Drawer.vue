@@ -43,7 +43,17 @@
       <!-- https://github.com/vuetifyjs/vuetify/pull/8574 -->
       <div />
 
+      <base-item
+        v-if="isLoggedIn"
+        :item="login"
+      />
+      <base-item
+        v-else
+        :item="logout"
+        @click="logoutUser()"
+      />
       <template v-for="(item, i) in computedItems">
+
         <base-item-group
           v-if="item.children"
           :key="`group-${i}`"
@@ -106,13 +116,18 @@ export default {
   },
 
   data: () => ({
+    login: {
+      title: 'Log in',
+      icon: 'mdi-account',
+      to: '/login',
+      group: 'auth'
+    },
+    logout: {
+      title: 'Log out',
+      icon: 'mdi-logout',
+      group: 'auth'
+    },
     items: [
-      {
-        title: 'Log in',
-        icon: 'mdi-account',
-        to: '/login',
-        group: 'auth'
-      },
       {
         icon: 'mdi-calendar-multiple',
         title: 'Curriculums',
@@ -158,6 +173,9 @@ export default {
         title: this.$t('avatar'),
       }
     },
+    isLoggedIn() {
+      return localStorage.getItem('token')
+    }
   },
 
   methods: {
@@ -167,6 +185,12 @@ export default {
         children: item.children ? item.children.map(this.mapItem) : undefined,
         title: this.$t(item.title),
       }
+    },
+    logoutUser: () => {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      console.log(localStorage.getItem('token'))
+      this.$router.push('/login')
     },
   },
 }
