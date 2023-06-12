@@ -3,6 +3,7 @@ package com.example.auditor.security.config;
 import com.example.auditor.security.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,6 +26,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .disable()
 
                 .authorizeRequests()
+
+                .antMatchers(HttpMethod.OPTIONS)
+                .permitAll()
 
                 .antMatchers("/curriculum/**")
                 .hasAuthority("CURRICULUM")
