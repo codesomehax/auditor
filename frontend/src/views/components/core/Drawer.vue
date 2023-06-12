@@ -105,6 +105,7 @@ import {
   mapState,
 } from 'vuex'
 
+
 export default {
   name: 'DashboardCoreDrawer',
 
@@ -189,8 +190,8 @@ export default {
     logoutUser: () => {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      console.log(localStorage.getItem('token'))
-      this.$router.push('/login')
+      // console.log(localStorage.getItem('token'))
+      window.location.href = '/login'
     },
   },
 }

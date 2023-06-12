@@ -22,6 +22,10 @@
                 type="submit"
                 class="btn primary"
             >Submit</button>
+            <span
+                style="color:red;"
+                v-if='wrongPassword'
+            >Wrong email or password</span>
         </div>
     </form>
 </template>
@@ -32,7 +36,8 @@ import { login } from '../../helpers/api'
 export default {
     data: () => ({
         email: '',
-        password: ''
+        password: '',
+        wrongPassword: false
     }),
     methods: {
         loginFormHander(e) {
@@ -45,6 +50,7 @@ export default {
                 console.log("success", resp)
                 this.$router.push({ name: 'Curriculums' })
             }, (err) => {
+                this.wrongPassword = true
                 console.log("error", err)
             })
         }
