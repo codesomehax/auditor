@@ -3,9 +3,9 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export default new Router({
- //  mode: 'hash',
-    mode: 'history',
+const router = new Router({
+  //  mode: 'hash',
+  mode: 'history',
   base: process.env.BASE_URL,
   routes: [
     {
@@ -23,10 +23,10 @@ export default new Router({
           component: () => import('@/views/Curriculum/Index'),
         },
         {
-            name: 'Curriculum-edit',
-            path: '/curriculum/edit/:id',
-            props: route => ({ action: route.query.action }),
-            component: () => import('@/views/Curriculum/Edit'),
+          name: 'Curriculum-edit',
+          path: '/curriculum/edit/:id',
+          props: route => ({ action: route.query.action }),
+          component: () => import('@/views/Curriculum/Edit'),
         },
         {
           name: 'Curriculum-create',
@@ -81,8 +81,52 @@ export default new Router({
           name: 'Student manual',
           path: 'manual-student',
           component: () => import('@/views/manuals/Student')
+        },
+        {
+          name: 'Login',
+          path: 'login',
+          component: () => import('@/views/Login/login')
+        },
+        {
+          name: 'Permission denied',
+          path: 'permission-denied',
+          component: () => import('@/views/PermissionDenied/PermissionDenied')
         }
       ],
     },
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  const publicPages = ['/login', '/manuals-list', '/manual-curriculum', '/manual-student', '/permission-denied']
+  const rolesRequiredPages = {
+    "CURRICULUM": ['/', '/curriculum', '/curriculum/edit', '/curriculum/create'],
+    "STUDENT": ['/students-list', '/student', '/students-comparison', '/students-performance-comparison'],
+    "TEMPLATE_MAIL": ['/mails-list', '/modify-mail'],
+  }
+  //public pages
+  const authNotRequired = publicPages.includes(to.path)
+  if (authNotRequired) {
+    return next()
+  }
+
+  const user = JSON.parse(localStorage.getItem('user'))
+  console.log('user', user)
+
+  //logged in pages
+  if (!authNotRequired && !user) {
+    return next('/login')
+  }
+  //pages with roles
+  for (let [roleName, pages] of Object.entries(rolesRequiredPages)) {
+    if (pages.includes(to.path) && user.includes(roleName)) {
+      return next()
+    }
+  }
+  //user does not have the required role
+  return next('permission-denied')
+  // next(false)
+
+})
+
+export default router

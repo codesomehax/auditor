@@ -64,8 +64,8 @@
     <template v-slot:append>
       <v-list-item>
         <v-row
-                align="center"
-                no-gutters
+          align="center"
+          no-gutters
         >
           <v-col cols="auto">
             Dark Mode
@@ -75,10 +75,10 @@
 
           <v-col cols="auto">
             <v-switch
-                    v-model="$vuetify.theme.dark"
-                    class="ma-0 pa-0"
-                    color="white"
-                    hide-details
+              v-model="$vuetify.theme.dark"
+              class="ma-0 pa-0"
+              color="white"
+              hide-details
             />
           </v-col>
         </v-row>
@@ -90,80 +90,86 @@
 </template>
 
 <script>
-  // Utilities
-  import {
-    mapState,
-  } from 'vuex'
+// Utilities
+import {
+  mapState,
+} from 'vuex'
 
-  export default {
-    name: 'DashboardCoreDrawer',
+export default {
+  name: 'DashboardCoreDrawer',
 
-    props: {
-      expandOnHover: {
-        type: Boolean,
-        default: false,
+  props: {
+    expandOnHover: {
+      type: Boolean,
+      default: false,
+    },
+  },
+
+  data: () => ({
+    items: [
+      {
+        title: 'Log in',
+        icon: 'mdi-account',
+        to: '/login',
+        group: 'auth'
+      },
+      {
+        icon: 'mdi-calendar-multiple',
+        title: 'Curriculums',
+        to: '/',
+        group: 'curriculum'
+      },
+      {
+        icon: 'mdi-account-group',
+        title: 'Students',
+        to: '/students-list',
+        group: 'student'
+      },
+      {
+        icon: 'mdi-email-multiple-outline',
+        title: 'Template mails',
+        to: '/mails-list',
+        group: 'mail'
+      },
+      {
+        icon: 'mdi-help-circle',
+        title: 'Manuals',
+        to: '/manuals-list'
+      }
+    ],
+  }),
+
+  computed: {
+    ...mapState(['barColor', 'barImage']),
+    drawer: {
+      get() {
+        return this.$store.state.drawer
+      },
+      set(val) {
+        this.$store.commit('SET_DRAWER', val)
       },
     },
-
-    data: () => ({
-      items: [
-        {
-          icon: 'mdi-calendar-multiple',
-          title: 'Curriculums',
-          to: '/',
-          group: 'curriculum'
-        },
-        {
-          icon: 'mdi-account-group',
-          title: 'Students',
-          to: '/students-list',
-          group: 'student'
-        },
-        {
-          icon: 'mdi-email-multiple-outline',
-          title: 'Template mails',
-          to: '/mails-list',
-          group: 'mail'
-        },
-        {
-          icon: 'mdi-help-circle',
-          title: 'Manuals',
-          to: '/manuals-list'
-        }
-      ],
-    }),
-
-    computed: {
-      ...mapState(['barColor', 'barImage']),
-      drawer: {
-        get () {
-          return this.$store.state.drawer
-        },
-        set (val) {
-          this.$store.commit('SET_DRAWER', val)
-        },
-      },
-      computedItems () {
-        return this.items.map(this.mapItem)
-      },
-      profile () {
-        return {
-          avatar: true,
-          title: this.$t('avatar'),
-        }
-      },
+    computedItems() {
+      return this.items.map(this.mapItem)
     },
-
-    methods: {
-      mapItem (item) {
-        return {
-          ...item,
-          children: item.children ? item.children.map(this.mapItem) : undefined,
-          title: this.$t(item.title),
-        }
-      },
+    profile() {
+      return {
+        avatar: true,
+        title: this.$t('avatar'),
+      }
     },
-  }
+  },
+
+  methods: {
+    mapItem(item) {
+      return {
+        ...item,
+        children: item.children ? item.children.map(this.mapItem) : undefined,
+        title: this.$t(item.title),
+      }
+    },
+  },
+}
 </script>
 
 <style lang="sass">
